@@ -121,6 +121,8 @@ def main() -> None:
     lint_parser.set_defaults(use_tanker="deployed")
     lint_parser.set_defaults(profile="default")
 
+    subparsers.add_parser("mirror")
+
     args = parser.parse_args()
 
     if args.home_isolation:
@@ -135,6 +137,8 @@ def main() -> None:
         deploy(args)
     elif command == "lint":
         lint(args)
+    elif args.command == "mirror":
+        ci.git.mirror(github_url="git@github.com:TankerHQ/sdk-ruby")
     else:
         parser.print_help()
         sys.exit(1)
