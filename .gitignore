@@ -1,0 +1,17 @@
+bin/
+pkg/
+spec/reports/
+.bundle/
+*.bundle
+*.gem
+*.so
+*.o
+*.a
+.rspec_status
+
+.mypy_cache
+
+.idea/
+
+/vendor
+/build

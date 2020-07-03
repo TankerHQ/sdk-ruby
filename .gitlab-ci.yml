@@ -1,0 +1,63 @@
+before_script:
+  #  We want to support several ruby versions so we use rvm
+  #  We can't run rvm as gitlab-runner because it tries to
+  #   run sudo apt-get
+  # So we run rvm as root and set NVM_DIR to /usr/local/rvm
+  # So bundle tries to write in /usr/local and fails
+  # So let's tell bundle to put gems in a local 'vendor'
+  # directory
+  - bundle config set path 'vendor'
+  - poetry install
+
+stages:
+  - check
+  - deploy
+
+lint:
+  stage: check
+  tags: [linux]
+  script:
+    - export PATH=$RVM_DIR/rubies/ruby-2.6.6/bin:$PATH
+    - poetry run python run-ci.py lint
+
+check/2.6:
+  stage: check
+  when: manual
+  tags: [linux]
+  script:
+    - export PATH=$RVM_DIR/rubies/ruby-2.6.6/bin:$PATH
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile gcc8-release
+
+check/2.7:
+  stage: check
+  when: manual
+  tags: [linux]
+  script:
+    - export PATH=$RVM_DIR/rubies/ruby-2.7.1/bin:$PATH
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile gcc8-release
+
+check/deployed/2.6:
+  stage: check
+  when: manual
+  tags: [linux]
+  script:
+    - export PATH=$RVM_DIR/rubies/ruby-2.6.6/bin:$PATH
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile gcc8-release
+
+check/deployed/2.7:
+  stage: check
+  when: manual
+  tags: [linux]
+  script:
+    - export PATH=$RVM_DIR/rubies/ruby-2.7.1/bin:$PATH
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile gcc8-release
+
+deploy:
+  stage: deploy
+  when: manual
+  only:
+    - tags
+  tags: [linux]
+  script:
+    - export PATH=$RVM_DIR/rubies/ruby-2.6.6/bin:$PATH
+    - poetry run python run-ci.py --isolate-conan-user-home deploy --profile gcc8-release

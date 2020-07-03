@@ -1,0 +1,86 @@
+# frozen_string_literal: true
+
+require 'tanker/c_tanker'
+require_relative 'status'
+
+module Tanker
+  class Core
+    def start(identity)
+      CTanker.tanker_start(@ctanker, identity).get.address
+    end
+
+    def generate_verification_key
+      CTanker.tanker_generate_verification_key(@ctanker).get_string
+    end
+
+    def register_identity(verification)
+      cverif = CTanker::CVerification.new(verification)
+      CTanker.tanker_register_identity(@ctanker, cverif).get
+    end
+
+    def verify_identity(verification)
+      cverif = CTanker::CVerification.new(verification)
+      CTanker.tanker_verify_identity(@ctanker, cverif).get
+    end
+
+    def set_verification_method(verification) # rubocop:disable Naming/AccessorMethodName (this is not a setter)
+      cverif = CTanker::CVerification.new(verification)
+      CTanker.tanker_set_verification_method(@ctanker, cverif).get
+    end
+
+    def get_verification_methods # rubocop:disable Naming/AccessorMethodName
+      method_list_ptr = CTanker.tanker_get_verification_methods(@ctanker).get
+      count = method_list_ptr.get(:uint32, FFI::Pointer.size)
+
+      method_base_addr = method_list_ptr.read_pointer
+      method_list = count.times.map do |i|
+        method_ptr = method_base_addr + i * CTanker::CVerificationMethod.size
+        CTanker::CVerificationMethod.new(method_ptr).to_verification_method
+      end
+      CTanker.tanker_free_verification_method_list method_list_ptr
+      method_list
+    end
+
+    def device_id
+      CTanker.tanker_device_id(@ctanker).get_string
+    end
+
+    def device_list
+      device_list_ptr = CTanker.tanker_get_device_list(@ctanker).get
+      count = device_list_ptr.get(:uint32, FFI::Pointer.size)
+
+      method_base_addr = device_list_ptr.read_pointer
+      device_info_list = count.times.map do |i|
+        method_ptr = method_base_addr + i * CTanker::CDeviceInfo.size
+        CTanker::CDeviceInfo.new(method_ptr)
+      end
+      CTanker.tanker_free_device_list device_list_ptr
+      device_info_list
+    end
+
+    def revoke_device(device_id)
+      CTanker.tanker_revoke_device(@ctanker, device_id).get
+    end
+
+    def stop
+      CTanker.tanker_stop(@ctanker).get
+    end
+
+    def status
+      CTanker.tanker_status(@ctanker)
+    end
+
+    def attach_provisional_identity(provisional_identity)
+      attach_ptr = CTanker.tanker_attach_provisional_identity(@ctanker, provisional_identity).get
+      attach_status = attach_ptr.get(:uint8, 1)
+      method_ptr = attach_ptr.get_pointer(FFI::Pointer.size)
+      method = (CTanker::CVerificationMethod.new(method_ptr).to_verification_method if method_ptr.address != 0)
+      AttachResult.new attach_status, method
+    end
+
+    def verify_provisional_identity(verification)
+      cverif = CTanker::CVerification.new(verification)
+      CTanker.tanker_verify_provisional_identity(@ctanker, cverif).get
+    end
+  end
+end

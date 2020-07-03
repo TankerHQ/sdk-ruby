@@ -1,0 +1,35 @@
+AllCops:
+  Exclude:
+    - 'bin/**/*'
+    - 'vendor/**/*'
+    - 'build/**/*'
+    - 'lib/tanker-core.rb'
+  TargetRubyVersion: 2.6
+
+Layout/LineLength:
+  Max: 120
+
+Metrics/MethodLength:
+  Max: 50
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+# The %i[] syntax is not obvious to readers
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
+# The full documentation is on our website
+Style/Documentation:
+  Enabled: false
+
+# Cyclomatic complexity is not a great metric
+# This gives false positives when switching on a few cases
+Metrics/AbcSize:
+  Enabled: false
+
+# Tests have long blocks
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - '*.gemspec'
