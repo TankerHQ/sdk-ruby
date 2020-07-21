@@ -6,7 +6,7 @@ before_script:
   # So bundle tries to write in /usr/local and fails
   # So let's tell bundle to put gems in a local 'vendor'
   # directory
-  - bundle config set path 'vendor'
+  - '[[ $(uname) == "Linux" ]] && bundle config set path vendor'
   - poetry install
 
 stages:
@@ -20,7 +20,7 @@ lint:
     - export PATH=$RVM_DIR/rubies/ruby-2.6.6/bin:$PATH
     - poetry run python run-ci.py lint
 
-check/2.6:
+check/linux/2.6:
   stage: check
   when: manual
   tags: [linux]
@@ -28,7 +28,7 @@ check/2.6:
     - export PATH=$RVM_DIR/rubies/ruby-2.6.6/bin:$PATH
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile gcc8-release
 
-check/2.7:
+check/linux/2.7:
   stage: check
   when: manual
   tags: [linux]
@@ -36,7 +36,7 @@ check/2.7:
     - export PATH=$RVM_DIR/rubies/ruby-2.7.1/bin:$PATH
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile gcc8-release
 
-check/deployed/2.6:
+check/linux/deployed/2.6:
   stage: check
   when: manual
   tags: [linux]
@@ -44,13 +44,29 @@ check/deployed/2.6:
     - export PATH=$RVM_DIR/rubies/ruby-2.6.6/bin:$PATH
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile gcc8-release
 
-check/deployed/2.7:
+check/linux/deployed/2.7:
   stage: check
   when: manual
   tags: [linux]
   script:
     - export PATH=$RVM_DIR/rubies/ruby-2.7.1/bin:$PATH
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile gcc8-release
+
+check/macos:
+  stage: check
+  when: manual
+  tags: [macos]
+  script:
+    - export PATH=$HOME/.rvm/rubies/ruby-2.7.1/bin:$PATH
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile macos-release
+
+check/macos/deployed:
+  stage: check
+  when: manual
+  tags: [macos]
+  script:
+    - export PATH=$HOME/.rvm/rubies/ruby-2.7.1/bin:$PATH
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile macos-release
 
 deploy:
   stage: deploy

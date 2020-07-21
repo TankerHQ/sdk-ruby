@@ -16,9 +16,14 @@ class Builder:
     def __init__(self, *, src_path: Path, tanker_conan_ref: str):
         self.src_path = src_path
         self.tanker_conan_ref = tanker_conan_ref
+        if sys.platform.startswith("linux"):
+            self.arch = "linux64"
+        else:
+            self.arch = "mac64"
+
 
     def get_build_path(self) -> Path:
-        build_path = self.src_path / "vendor/libctanker/linux64"
+        build_path = self.src_path / "vendor/libctanker" / self.arch
         build_path.makedirs_p()
         return build_path
 

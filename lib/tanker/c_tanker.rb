@@ -4,6 +4,7 @@ require 'ffi'
 require_relative 'core/options'
 require_relative 'sharing_options'
 require_relative 'encryption_options'
+require_relative 'c_tanker/c_lib'
 require_relative 'c_tanker/c_future'
 require_relative 'c_tanker/c_verification'
 require_relative 'c_tanker/c_verification_method'
@@ -22,8 +23,7 @@ end
 module Tanker
   module CTanker
     extend FFI::Library
-
-    ffi_lib "#{__dir__}/../../vendor/libctanker/linux64/tanker/lib/libctanker.so"
+    ffi_lib get_path('ctanker')
 
     typedef :pointer, :session_pointer
     typedef :pointer, :enc_sess_pointer
