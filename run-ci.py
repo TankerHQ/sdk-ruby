@@ -8,7 +8,7 @@ import ci
 import ci.conan
 import ci.git
 
-DEPLOYED_TANKER = "tanker/2.4.1@tanker/stable"
+DEPLOYED_TANKER = "tanker/2.4.2-alpha1@tanker/stable"
 LOCAL_TANKER = "tanker/dev@tanker/dev"
 
 
@@ -20,7 +20,6 @@ class Builder:
             self.arch = "linux64"
         else:
             self.arch = "mac64"
-
 
     def get_build_path(self) -> Path:
         build_path = self.src_path / "vendor/libctanker" / self.arch
