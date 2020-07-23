@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
     'README.rst',
     'LICENSE',
     'lib/**/*',
+    # Keep this in sync with run-ci.py
     'vendor/libctanker/linux64/tanker/lib/libctanker.so',
     'vendor/libctanker/mac64/tanker/lib/libctanker.dylib',
   ]
