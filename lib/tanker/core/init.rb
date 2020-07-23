@@ -26,6 +26,12 @@ module Tanker
       @freed = true
       CTanker.tanker_destroy(@ctanker).get
       @ctanker = nil
+
+      public_methods(false).each do |method|
+        send(:define_singleton_method, method) do |*_|
+          raise "using Tanker::Core##{method} after free"
+        end
+      end
     end
 
     def self.set_log_handler(&block) # rubocop:disable Naming/AccessorMethodName

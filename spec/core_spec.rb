@@ -36,6 +36,14 @@ RSpec.describe Tanker do
     expect(tanker).to be_kind_of Tanker::Core
   end
 
+  it 'throws when using a Core after free' do
+    tanker = Tanker::Core.new @options
+    tanker.free
+    # test a method with and without args
+    expect { tanker.status }.to raise_error(RuntimeError)
+    expect { tanker.start(@app.create_identity) }.to raise_error(RuntimeError)
+  end
+
   it 'can start and stop a Tanker session' do
     tanker = Tanker::Core.new @options
     identity = @app.create_identity
