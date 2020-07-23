@@ -88,6 +88,9 @@ def lint(args: Any) -> None:
 
 
 def deploy() -> None:
+    ctanker_path = Path("vendor/libctanker/")
+    if not ctanker_path.exists():
+        sys.exit(f"Error: {ctanker_path} does not exist!")
     ci.run("bundle", "install")
     ci.run("bundle", "exec", "rake", "build")
     ci.run("bundle", "exec", "rake", "push")
