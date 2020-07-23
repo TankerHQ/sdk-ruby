@@ -1,10 +1,12 @@
 from typing import Any
 import argparse
+import os
 import sys
 
 from path import Path
 
 import ci
+import ci.bump
 import ci.conan
 import ci.git
 
@@ -88,6 +90,9 @@ def lint(args: Any) -> None:
 
 
 def deploy() -> None:
+    tag = os.environ["CI_COMMIT_TAG"]
+    version = ci.bump.version_from_git_tag(tag)
+    ci.bump.bump_files(version)
     expected_libs = [
         "vendor/libctanker/linux64/tanker/lib/libctanker.so",
         "vendor/libctanker/mac64/tanker/lib/libctanker.dylib",
@@ -118,7 +123,7 @@ def main() -> None:
     )
     build_and_test_parser.add_argument("--profile", default="default")
 
-    deploy_parser = subparsers.add_parser("deploy")
+    subparsers.add_parser("deploy")
 
     lint_parser = subparsers.add_parser("lint")
     lint_parser.set_defaults(use_tanker="deployed")
