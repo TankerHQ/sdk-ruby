@@ -22,7 +22,14 @@ Gem::Specification.new do |spec|
   spec.metadata['source_code_uri'] = 'https://github.com/TankerHQ/sdk-ruby'
 
   # Specify which files should be added to the gem when it is released.
-  spec.files = Dir['README.rst', 'LICENSE', 'lib/**/*', 'vendor/libctanker/linux64/tanker/lib/libctanker.so']
+  spec.files = Dir[
+    'README.rst',
+    'LICENSE',
+    'lib/**/*',
+    # Keep this in sync with run-ci.py
+    'vendor/libctanker/linux64/tanker/lib/libctanker.so',
+    'vendor/libctanker/mac64/tanker/lib/libctanker.dylib',
+  ]
 
   spec.require_paths = ['lib']
 

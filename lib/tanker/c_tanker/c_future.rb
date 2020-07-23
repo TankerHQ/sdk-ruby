@@ -2,13 +2,14 @@
 
 require 'ffi'
 require 'tanker/error'
+require 'tanker/c_tanker/c_lib'
 require_relative 'c_tanker_error'
 
 module Tanker
   module CTanker
     extend FFI::Library
 
-    ffi_lib "#{__dir__}/../../../vendor/libctanker/linux64/tanker/lib/libctanker.so"
+    ffi_lib get_path('ctanker')
 
     class CFuture < FFI::AutoPointer
       def initialize(ptr, proc = nil, &block)

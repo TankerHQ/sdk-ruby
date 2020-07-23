@@ -2,14 +2,14 @@
 
 require 'ffi'
 require 'tanker/c_tanker/c_future'
+require 'tanker/c_tanker/c_lib'
 
 module Tanker
   class Admin
     module CAdmin
       extend FFI::Library
 
-      ffi_lib "#{__dir__}/../../../vendor/libctanker/linux64/tanker/lib/libtanker_admin-c.so"
-
+      ffi_lib Tanker::CTanker.get_path('tanker_admin-c')
       typedef :pointer, :admin_pointer
 
       # Note: We use those CFutures with the tanker_future_* functions exposed by CTanker,

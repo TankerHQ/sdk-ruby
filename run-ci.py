@@ -8,7 +8,7 @@ import ci
 import ci.conan
 import ci.git
 
-DEPLOYED_TANKER = "tanker/2.4.1@tanker/stable"
+DEPLOYED_TANKER = "tanker/2.4.2-alpha1@tanker/stable"
 LOCAL_TANKER = "tanker/dev@tanker/dev"
 
 
@@ -16,9 +16,13 @@ class Builder:
     def __init__(self, *, src_path: Path, tanker_conan_ref: str):
         self.src_path = src_path
         self.tanker_conan_ref = tanker_conan_ref
+        if sys.platform.startswith("linux"):
+            self.arch = "linux64"
+        else:
+            self.arch = "mac64"
 
     def get_build_path(self) -> Path:
-        build_path = self.src_path / "vendor/libctanker/linux64"
+        build_path = self.src_path / "vendor/libctanker" / self.arch
         build_path.makedirs_p()
         return build_path
 
@@ -46,11 +50,6 @@ class Builder:
     def lint(self) -> None:
         with self.src_path:
             ci.run("bundle", "exec", "rake", "rubocop")
-
-    def deploy(self) -> None:
-        with self.src_path:
-            ci.run("bundle", "exec", "rake", "build")
-            ci.run("bundle", "exec", "rake", "push")
 
 
 def create_builder(args: Any) -> Builder:
@@ -88,12 +87,18 @@ def lint(args: Any) -> None:
     builder.lint()
 
 
-def deploy(args: Any) -> None:
-    builder = create_builder(args)
-    builder.install_ruby_deps()
-    builder.install_sdk_native(profile=args.profile)
-    builder.test()
-    builder.deploy()
+def deploy() -> None:
+    expected_libs = [
+        "vendor/libctanker/linux64/tanker/lib/libctanker.so",
+        "vendor/libctanker/mac64/tanker/lib/libctanker.dylib",
+    ]
+    for lib in expected_libs:
+        expected_path = Path(lib)
+        if not expected_path.exists():
+            sys.exit(f"Error: {expected_path} does not exist!")
+    ci.run("bundle", "install")
+    ci.run("bundle", "exec", "rake", "build")
+    ci.run("bundle", "exec", "rake", "push")
 
 
 def main() -> None:
@@ -114,8 +119,6 @@ def main() -> None:
     build_and_test_parser.add_argument("--profile", default="default")
 
     deploy_parser = subparsers.add_parser("deploy")
-    deploy_parser.add_argument("--profile", required=True)
-    deploy_parser.set_defaults(use_tanker="deployed")
 
     lint_parser = subparsers.add_parser("lint")
     lint_parser.set_defaults(use_tanker="deployed")
@@ -133,8 +136,7 @@ def main() -> None:
     if command == "build-and-test":
         build_and_test(args)
     elif command == "deploy":
-        args.use_tanker = "deployed"
-        deploy(args)
+        deploy()
     elif command == "lint":
         lint(args)
     elif args.command == "mirror":
