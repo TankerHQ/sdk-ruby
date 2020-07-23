@@ -51,11 +51,6 @@ class Builder:
         with self.src_path:
             ci.run("bundle", "exec", "rake", "rubocop")
 
-    def deploy(self) -> None:
-        with self.src_path:
-            ci.run("bundle", "exec", "rake", "build")
-            ci.run("bundle", "exec", "rake", "push")
-
 
 def create_builder(args: Any) -> Builder:
     src_path = Path.getcwd()
@@ -92,12 +87,10 @@ def lint(args: Any) -> None:
     builder.lint()
 
 
-def deploy(args: Any) -> None:
-    builder = create_builder(args)
-    builder.install_ruby_deps()
-    builder.install_sdk_native(profile=args.profile)
-    builder.test()
-    builder.deploy()
+def deploy() -> None:
+    ci.run("bundle", "install")
+    ci.run("bundle", "exec", "rake", "build")
+    ci.run("bundle", "exec", "rake", "push")
 
 
 def main() -> None:
@@ -137,8 +130,7 @@ def main() -> None:
     if command == "build-and-test":
         build_and_test(args)
     elif command == "deploy":
-        args.use_tanker = "deployed"
-        deploy(args)
+        deploy()
     elif command == "lint":
         lint(args)
     elif args.command == "mirror":

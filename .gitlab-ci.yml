@@ -43,6 +43,9 @@ check/linux/deployed/2.6:
   script:
     - export PATH=$RVM_DIR/rubies/ruby-2.6.6/bin:$PATH
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile gcc8-release
+  artifacts:
+    paths:
+      - vendor/libctanker/
 
 check/linux/deployed/2.7:
   stage: check
@@ -67,6 +70,9 @@ check/macos/deployed:
   script:
     - export PATH=$HOME/.rvm/rubies/ruby-2.7.1/bin:$PATH
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile macos-release
+  artifacts:
+    paths:
+      - vendor/libctanker/
 
 deploy:
   stage: deploy
@@ -75,8 +81,7 @@ deploy:
     - tags
   tags: [linux]
   script:
-    - export PATH=$RVM_DIR/rubies/ruby-2.6.6/bin:$PATH
-    - poetry run python run-ci.py --isolate-conan-user-home deploy --profile gcc8-release
+    - poetry run python run-ci.py deploy
 
 mirror:
   tags:
