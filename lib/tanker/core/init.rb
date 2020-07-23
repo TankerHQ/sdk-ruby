@@ -8,8 +8,11 @@ module Tanker
     def initialize(options)
       @revoke_event_handlers = Set.new
       @ctanker = CTanker.tanker_create(options).get
+      @freed = false
       ctanker_addr = @ctanker.address
       ObjectSpace.define_finalizer(@ctanker) do |_|
+        next if @freed
+
         CTanker.tanker_destroy(FFI::Pointer.new(:void, ctanker_addr)).get
       end
 
@@ -17,6 +20,12 @@ module Tanker
         Thread.new { @revoke_event_handlers.each(&:call) }
       }
       CTanker.tanker_event_connect(@ctanker, CTanker::CTankerEvent::DEVICE_REVOKED, @device_revoked_handler, nil).get
+    end
+
+    def free
+      @freed = true
+      CTanker.tanker_destroy(@ctanker).get
+      @ctanker = nil
     end
 
     def self.set_log_handler(&block) # rubocop:disable Naming/AccessorMethodName
