@@ -2,7 +2,7 @@
 
 module Tanker
   class Core
-    VERSION = '2.4.3.alpha.1'
+    VERSION = '2.4.3.alpha.2'
 
     def self.native_version
       CTanker.tanker_version_string
