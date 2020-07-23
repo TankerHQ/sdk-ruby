@@ -111,8 +111,6 @@ def main() -> None:
     build_and_test_parser.add_argument("--profile", default="default")
 
     deploy_parser = subparsers.add_parser("deploy")
-    deploy_parser.add_argument("--profile", required=True)
-    deploy_parser.set_defaults(use_tanker="deployed")
 
     lint_parser = subparsers.add_parser("lint")
     lint_parser.set_defaults(use_tanker="deployed")
