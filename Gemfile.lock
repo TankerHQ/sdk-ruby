@@ -9,7 +9,7 @@ GIT
 PATH
   remote: .
   specs:
-    tanker-core (2.4.3.alpha.2)
+    tanker-core (2.4.3.alpha.3)
       ffi (~> 1.13)
 
 GEM

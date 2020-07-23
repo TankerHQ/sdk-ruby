@@ -1,5 +1,5 @@
 [version]
-current = "2.4.3.alpha.2"
+current = "2.4.3.alpha.3"
 
 regex = '''
   (dev)
