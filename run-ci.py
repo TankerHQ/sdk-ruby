@@ -5,10 +5,10 @@ import sys
 
 from path import Path
 
-import ci
-import ci.bump
-import ci.conan
-import ci.git
+import tankerci
+import tankerci.bump
+import tankerci.conan
+import tankerci.git
 
 DEPLOYED_TANKER = "tanker/2.4.2-alpha1@tanker/stable"
 LOCAL_TANKER = "tanker/dev@tanker/dev"
@@ -31,7 +31,7 @@ class Builder:
     def install_sdk_native(self, *, profile: str) -> None:
         install_path = self.get_build_path()
         # fmt: off
-        ci.conan.run(
+        tankerci.conan.run(
             "install", self.tanker_conan_ref,
             "--update",
             "--profile", profile,
@@ -43,11 +43,11 @@ class Builder:
 
     def install_ruby_deps(self):
         with self.src_path:
-            ci.run("bundle", "install")
+            tankerci.run("bundle", "install")
 
     def test(self) -> None:
         with self.src_path:
-            ci.run("bundle", "exec", "rake", "spec")
+            tankerci.run("bundle", "exec", "rake", "spec")
 
 
 def create_builder(args: Any) -> Builder:
@@ -57,14 +57,14 @@ def create_builder(args: Any) -> Builder:
         tanker_conan_ref = DEPLOYED_TANKER
     elif args.use_tanker == "local":
         tanker_conan_ref = LOCAL_TANKER
-        ci.conan.export(
+        tankerci.conan.export(
             src_path=Path.getcwd().parent / "sdk-native", ref_or_channel="tanker/dev"
         )
     elif args.use_tanker == "same-as-branch":
         tanker_conan_ref = LOCAL_TANKER
-        workspace = ci.git.prepare_sources(repos=["sdk-native", "sdk-ruby"])
+        workspace = tankerci.git.prepare_sources(repos=["sdk-native", "sdk-ruby"])
         src_path = workspace / "sdk-ruby"
-        ci.conan.export(src_path=workspace / "sdk-native", ref_or_channel="tanker/dev")
+        tankerci.conan.export(src_path=workspace / "sdk-native", ref_or_channel="tanker/dev")
     else:
         raise RuntimeError("invalid argument")
 
@@ -80,14 +80,14 @@ def build_and_test(args: Any) -> None:
 
 
 def lint() -> None:
-    ci.run("bundle", "install")
-    ci.run("bundle", "exec", "rake", "rubocop")
+    tankerci.run("bundle", "install")
+    tankerci.run("bundle", "exec", "rake", "rubocop")
 
 
 def deploy() -> None:
     tag = os.environ["CI_COMMIT_TAG"]
-    version = ci.bump.version_from_git_tag(tag)
-    ci.bump.bump_files(version)
+    version = tankerci.bump.version_from_git_tag(tag)
+    tankerci.bump.bump_files(version)
     expected_libs = [
         "vendor/libctanker/linux64/tanker/lib/libctanker.so",
         "vendor/libctanker/mac64/tanker/lib/libctanker.dylib",
@@ -96,9 +96,9 @@ def deploy() -> None:
         expected_path = Path(lib)
         if not expected_path.exists():
             sys.exit(f"Error: {expected_path} does not exist!")
-    ci.run("bundle", "install")
-    ci.run("bundle", "exec", "rake", "build")
-    ci.run("bundle", "exec", "rake", "push")
+    tankerci.run("bundle", "install")
+    tankerci.run("bundle", "exec", "rake", "build")
+    tankerci.run("bundle", "exec", "rake", "push")
 
 
 def main() -> None:
@@ -125,8 +125,8 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.home_isolation:
-        ci.conan.set_home_isolation()
-        ci.conan.update_config()
+        tankerci.conan.set_home_isolation()
+        tankerci.conan.update_config()
 
     command = args.command
     if command == "build-and-test":
@@ -136,7 +136,7 @@ def main() -> None:
     elif command == "lint":
         lint()
     elif args.command == "mirror":
-        ci.git.mirror(github_url="git@github.com:TankerHQ/sdk-ruby")
+        tankerci.git.mirror(github_url="git@github.com:TankerHQ/sdk-ruby")
     else:
         parser.print_help()
         sys.exit(1)
