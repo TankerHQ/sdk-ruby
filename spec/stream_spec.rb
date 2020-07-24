@@ -15,7 +15,7 @@ RSpec.describe "#{Tanker} streams" do
   end
 
   after(:all) do
-    @tanker.stop
+    @tanker.free
 
     @app.delete
   end
@@ -63,6 +63,8 @@ RSpec.describe "#{Tanker} streams" do
 
     decrypted = bob.decrypt_utf8 ciphertext
     expect(decrypted).to eq(plaintext)
+
+    bob.free
   end
 
   it 'can encrypt and not share a stream with self' do
@@ -87,6 +89,8 @@ RSpec.describe "#{Tanker} streams" do
 
     decrypted = bob.decrypt_utf8 ciphertext
     expect(decrypted).to eq(plaintext)
+
+    bob.free
   end
 
   it 'throws the same errors as the inner stream' do

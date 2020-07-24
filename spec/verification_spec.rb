@@ -26,13 +26,13 @@ RSpec.describe "#{Tanker} Verification" do
     verif_key_verification = Tanker::VerificationKeyVerification.new verif_key
     tanker1.register_identity verif_key_verification
     expect(tanker1.status).to be(Tanker::Status::READY)
-    tanker1.stop
+    tanker1.free
 
     tanker2 = Tanker::Core.new @options
     expect(tanker2.start(@identity)).to be(Tanker::Status::IDENTITY_VERIFICATION_NEEDED)
     tanker2.verify_identity verif_key_verification
     expect(tanker2.status).to be(Tanker::Status::READY)
-    tanker2.stop
+    tanker2.free
   end
 
   it 'Can setup and use an unlock passphrase' do
@@ -42,13 +42,13 @@ RSpec.describe "#{Tanker} Verification" do
     tanker1 = Tanker::Core.new @options
     tanker1.start @identity
     tanker1.register_identity(pass_verif)
-    tanker1.stop
+    tanker1.free
 
     tanker2 = Tanker::Core.new @options
     expect(tanker2.start(@identity)).to be(Tanker::Status::IDENTITY_VERIFICATION_NEEDED)
     tanker2.verify_identity pass_verif
     expect(tanker2.status).to be(Tanker::Status::READY)
-    tanker2.stop
+    tanker2.free
   end
 
   it 'Can update an unlock passphrase' do
@@ -59,13 +59,13 @@ RSpec.describe "#{Tanker} Verification" do
     tanker1.start @identity
     tanker1.register_identity first_verif
     tanker1.set_verification_method second_verif
-    tanker1.stop
+    tanker1.free
 
     tanker2 = Tanker::Core.new @options
     expect(tanker2.start(@identity)).to be(Tanker::Status::IDENTITY_VERIFICATION_NEEDED)
     tanker2.verify_identity second_verif
     expect(tanker2.status).to be(Tanker::Status::READY)
-    tanker2.stop
+    tanker2.free
   end
 
   it 'can check that the password unlock method is set-up' do
@@ -73,7 +73,7 @@ RSpec.describe "#{Tanker} Verification" do
     tanker.start @identity
     tanker.register_identity Tanker::PassphraseVerification.new 'The Cost of Legacy'
     methods = tanker.get_verification_methods
-    tanker.stop
+    tanker.free
     expect(methods).to eq [Tanker::PassphraseVerificationMethod.new]
   end
 
@@ -85,7 +85,7 @@ RSpec.describe "#{Tanker} Verification" do
     tanker.start @identity
     tanker.register_identity Tanker::EmailVerification.new(email, code)
     methods = tanker.get_verification_methods
-    tanker.stop
+    tanker.free
     expect(methods).to eq [Tanker::EmailVerificationMethod.new(email)]
   end
 
@@ -98,7 +98,7 @@ RSpec.describe "#{Tanker} Verification" do
     tanker.register_identity Tanker::PassphraseVerification.new 'Coolest Shades Ever'
     tanker.set_verification_method Tanker::EmailVerification.new(email, code)
     methods = tanker.get_verification_methods
-    tanker.stop
+    tanker.free
 
     expected_methods = [Tanker::EmailVerificationMethod.new(email), Tanker::PassphraseVerificationMethod.new]
     expect(methods.sort_by { |e| e.class.name }).to eq expected_methods
@@ -110,13 +110,13 @@ RSpec.describe "#{Tanker} Verification" do
     tanker1 = Tanker::Core.new @options
     tanker1.start @identity
     tanker1.register_identity Tanker::EmailVerification.new(email, @app.get_verification_code(email))
-    tanker1.stop
+    tanker1.free
 
     tanker2 = Tanker::Core.new @options
     tanker2.start @identity
     tanker2.verify_identity Tanker::EmailVerification.new(email, @app.get_verification_code(email))
     expect(tanker2.status).to eq(Tanker::Status::READY)
-    tanker2.stop
+    tanker2.free
   end
 
   it 'can use OIDC ID Tokens as verification' do
@@ -146,7 +146,7 @@ RSpec.describe "#{Tanker} Verification" do
     tanker1 = Tanker::Core.new @options
     tanker1.start martine_identity
     tanker1.register_identity Tanker::OIDCIDTokenVerification.new(oidc_token)
-    tanker1.stop
+    tanker1.free
 
     tanker2 = Tanker::Core.new @options
     tanker2.start martine_identity
@@ -155,7 +155,7 @@ RSpec.describe "#{Tanker} Verification" do
     expect(tanker2.status).to eq(Tanker::Status::READY)
 
     methods = tanker2.get_verification_methods
-    tanker2.stop
+    tanker2.free
     expect(methods).to eq [Tanker::OIDCIDTokenVerificationMethod.new]
   end
 end

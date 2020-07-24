@@ -24,8 +24,8 @@ RSpec.describe "#{Tanker} Encryption Sessions" do
   end
 
   after(:each) do
-    @alice.stop
-    @bob.stop
+    @alice.free
+    @bob.free
   end
 
   after(:all) do

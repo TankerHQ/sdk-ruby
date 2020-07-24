@@ -36,6 +36,14 @@ RSpec.describe Tanker do
     expect(tanker).to be_kind_of Tanker::Core
   end
 
+  it 'throws when using a Core after free' do
+    tanker = Tanker::Core.new @options
+    tanker.free
+    # test a method with and without args
+    expect { tanker.status }.to raise_error(RuntimeError)
+    expect { tanker.start(@app.create_identity) }.to raise_error(RuntimeError)
+  end
+
   it 'can start and stop a Tanker session' do
     tanker = Tanker::Core.new @options
     identity = @app.create_identity
@@ -47,6 +55,7 @@ RSpec.describe Tanker do
 
     tanker.stop
     expect(tanker.status).to be(Tanker::Status::STOPPED)
+    tanker.free
   end
 
   it 'can encrypt and decrypt back' do
@@ -59,7 +68,7 @@ RSpec.describe Tanker do
     decrypted = tanker.decrypt_utf8 ciphertext
     expect(decrypted).to eq(plaintext)
 
-    tanker.stop
+    tanker.free
   end
 
   it 'can encrypt, share, and decrypt between two users' do
@@ -79,8 +88,8 @@ RSpec.describe Tanker do
     decrypted = bob.decrypt_utf8 ciphertext
     expect(decrypted).to eq(plaintext)
 
-    alice.stop
-    bob.stop
+    alice.free
+    bob.free
   end
 
   it 'can encrypt-and-share, then decrypt, between two users' do
@@ -98,8 +107,8 @@ RSpec.describe Tanker do
     decrypted = bob.decrypt_utf8 ciphertext
     expect(decrypted).to eq(plaintext)
 
-    alice.stop
-    bob.stop
+    alice.free
+    bob.free
   end
 
   it 'can encrypt without sharing with self' do
@@ -121,8 +130,8 @@ RSpec.describe Tanker do
     decrypted = bob.decrypt_utf8 ciphertext
     expect(decrypted).to eq(plaintext)
 
-    alice.stop
-    bob.stop
+    alice.free
+    bob.free
   end
 
   it 'can self-revoke' do
@@ -133,7 +142,7 @@ RSpec.describe Tanker do
     tanker.connect_device_revoked_handler do
       # Tanker is already stopped, but let's call it anyway just to check it
       # doesn't deadlock.
-      tanker.stop
+      tanker.free
       got_revoked_event = true
     end
 
@@ -156,6 +165,8 @@ RSpec.describe Tanker do
     expect(devices.length).to be 1
     expect(devices[0].revoked?).to be false
     expect(devices[0].device_id).to eq tanker.device_id
+
+    tanker.free
   end
 
   it 'fails to prehash_password the empty string' do
@@ -189,7 +200,7 @@ RSpec.describe Tanker do
     bob_public_identity = Tanker::Identity.get_public_identity bob_provisional_identity
 
     encrypted = alice.encrypt_utf8 message, Tanker::EncryptionOptions.new(share_with_users: [bob_public_identity])
-    alice.stop
+    alice.free
 
     bob = Tanker::Core.new @options
     bob_identity = @app.create_identity
@@ -204,7 +215,7 @@ RSpec.describe Tanker do
 
     decrypted = bob.decrypt_utf8 encrypted
     expect(decrypted).to eq message
-    bob.stop
+    bob.free
   end
 
   it 'can register and attach a provisional user with a single verification' do
@@ -218,7 +229,7 @@ RSpec.describe Tanker do
     alice = Tanker::Core.new @options
     alice.start_anonymous @app.create_identity
     encrypted = alice.encrypt_utf8 message, Tanker::EncryptionOptions.new(share_with_users: [bob_public_identity])
-    alice.stop
+    alice.free
 
     bob.start bob_identity
     verif_code = @app.get_verification_code bob_email
@@ -227,6 +238,6 @@ RSpec.describe Tanker do
 
     decrypted = bob.decrypt_utf8 encrypted
     expect(decrypted).to eq message
-    bob.stop
+    bob.free
   end
 end
