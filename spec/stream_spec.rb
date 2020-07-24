@@ -117,7 +117,7 @@ RSpec.describe "#{Tanker} streams" do
     encrypted_stream = StringIO.new(ciphertext)
     decrypted_stream = @tanker.decrypt_stream encrypted_stream
 
-    expect { decrypted_stream.read } .to raise_error(Tanker::Error) do |e|
+    expect { decrypted_stream.read }.to raise_error(Tanker::Error) do |e|
       expect(e.code).to eq(Tanker::Error::DECRYPTION_FAILED)
     end
     decrypted_stream.close

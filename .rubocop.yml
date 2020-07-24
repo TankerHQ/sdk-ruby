@@ -1,4 +1,9 @@
 AllCops:
+  # We lock rubocop in Gemfile.lock, so we want all the pending cops. This means
+  # you must fix all new cops when bumping rubocop in the gemfile, which seems
+  # reasonable.
+  # See: https://docs.rubocop.org/rubocop/versioning.html for more details
+  NewCops: enable
   Exclude:
     - 'bin/**/*'
     - 'vendor/**/*'

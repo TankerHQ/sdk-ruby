@@ -49,10 +49,6 @@ class Builder:
         with self.src_path:
             ci.run("bundle", "exec", "rake", "spec")
 
-    def lint(self) -> None:
-        with self.src_path:
-            ci.run("bundle", "exec", "rake", "rubocop")
-
 
 def create_builder(args: Any) -> Builder:
     src_path = Path.getcwd()
@@ -83,10 +79,9 @@ def build_and_test(args: Any) -> None:
     builder.test()
 
 
-def lint(args: Any) -> None:
-    builder = create_builder(args)
-    builder.install_ruby_deps()
-    builder.lint()
+def lint() -> None:
+    ci.run("bundle", "install")
+    ci.run("bundle", "exec", "rake", "rubocop")
 
 
 def deploy() -> None:
@@ -124,11 +119,7 @@ def main() -> None:
     build_and_test_parser.add_argument("--profile", default="default")
 
     subparsers.add_parser("deploy")
-
-    lint_parser = subparsers.add_parser("lint")
-    lint_parser.set_defaults(use_tanker="deployed")
-    lint_parser.set_defaults(profile="default")
-
+    subparsers.add_parser("lint")
     subparsers.add_parser("mirror")
 
     args = parser.parse_args()
@@ -143,7 +134,7 @@ def main() -> None:
     elif command == "deploy":
         deploy()
     elif command == "lint":
-        lint(args)
+        lint()
     elif args.command == "mirror":
         ci.git.mirror(github_url="git@github.com:TankerHQ/sdk-ruby")
     else:
