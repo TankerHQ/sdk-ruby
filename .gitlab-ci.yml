@@ -56,19 +56,21 @@ check/linux/deployed/2.7:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile gcc8-release
 
 check/macos:
+  variables:
+    RBENV_VERSION: 2.7.1
   stage: check
   when: manual
   tags: [macos]
   script:
-    - export PATH=$HOME/.rvm/rubies/ruby-2.7.1/bin:$PATH
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile macos-release
 
 check/macos/deployed:
+  variables:
+    RBENV_VERSION: 2.7.1
   stage: check
   when: manual
   tags: [macos]
   script:
-    - export PATH=$HOME/.rvm/rubies/ruby-2.7.1/bin:$PATH
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile macos-release
   artifacts:
     paths:
