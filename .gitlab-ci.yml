@@ -18,7 +18,7 @@ check/linux/2.6:
   tags: [linux]
   script:
     - export PATH=$HOME/.rbenv/versions/2.6.6/bin:$PATH
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile gcc8-release
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile gcc8-release-shared
 
 check/linux/2.7:
   stage: check
@@ -26,7 +26,7 @@ check/linux/2.7:
   tags: [linux]
   script:
     - export PATH=$HOME/.rbenv/versions/2.7.1/bin:$PATH
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile gcc8-release
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile gcc8-release-shared
 
 check/linux/deployed/2.6:
   stage: check
@@ -34,7 +34,7 @@ check/linux/deployed/2.6:
   tags: [linux]
   script:
     - export PATH=$HOME/.rbenv/versions/2.6.6/bin:$PATH
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile gcc8-release
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile gcc8-release-shared
   artifacts:
     paths:
       - vendor/libctanker/
@@ -45,7 +45,7 @@ check/linux/deployed/2.7:
   tags: [linux]
   script:
     - export PATH=$HOME/.rbenv/versions/2.7.1/bin:$PATH
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile gcc8-release
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile gcc8-release-shared
 
 check/macos:
   variables:
@@ -54,7 +54,7 @@ check/macos:
   when: manual
   tags: [macos]
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile macos-release
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile macos-release-shared
 
 check/macos/deployed:
   variables:
@@ -63,7 +63,7 @@ check/macos/deployed:
   when: manual
   tags: [macos]
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile macos-release
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile macos-release-shared
   artifacts:
     paths:
       - vendor/libctanker/
