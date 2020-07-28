@@ -35,7 +35,6 @@ class Builder:
             "install", self.tanker_conan_ref,
             "--update",
             "--profile", profile,
-            "--options", "tanker:tankerlib_shared=True",
             "--install-folder", install_path,
             "--generator", "deploy"
         )
