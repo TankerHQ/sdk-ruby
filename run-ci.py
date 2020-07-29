@@ -87,6 +87,13 @@ def lint() -> None:
 
 
 def deploy() -> None:
+    for lib in expected_libs:
+        expected_path = Path(lib)
+        if not expected_path.exists():
+            sys.exit(f"Error: {expected_path} does not exist!")
+
+    tankerci.run("bundle", "install")
+
     tag = os.environ["CI_COMMIT_TAG"]
     version = tankerci.bump.version_from_git_tag(tag)
     tankerci.bump.bump_files(version)
@@ -94,11 +101,6 @@ def deploy() -> None:
         "vendor/libctanker/linux64/tanker/lib/libctanker.so",
         "vendor/libctanker/mac64/tanker/lib/libctanker.dylib",
     ]
-    for lib in expected_libs:
-        expected_path = Path(lib)
-        if not expected_path.exists():
-            sys.exit(f"Error: {expected_path} does not exist!")
-    tankerci.run("bundle", "install")
     tankerci.run("bundle", "exec", "rake", "build")
     tankerci.run("bundle", "exec", "rake", "push")
 
