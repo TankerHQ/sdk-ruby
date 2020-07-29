@@ -63,7 +63,9 @@ def create_builder(args: Any) -> Builder:
         tanker_conan_ref = LOCAL_TANKER
         workspace = tankerci.git.prepare_sources(repos=["sdk-native", "sdk-ruby"])
         src_path = workspace / "sdk-ruby"
-        tankerci.conan.export(src_path=workspace / "sdk-native", ref_or_channel="tanker/dev")
+        tankerci.conan.export(
+            src_path=workspace / "sdk-native", ref_or_channel="tanker/dev"
+        )
     else:
         raise RuntimeError("invalid argument")
 
@@ -84,9 +86,6 @@ def lint() -> None:
 
 
 def deploy() -> None:
-    tag = os.environ["CI_COMMIT_TAG"]
-    version = tankerci.bump.version_from_git_tag(tag)
-    tankerci.bump.bump_files(version)
     expected_libs = [
         "vendor/libctanker/linux64/tanker/lib/libctanker.so",
         "vendor/libctanker/mac64/tanker/lib/libctanker.dylib",
@@ -95,7 +94,19 @@ def deploy() -> None:
         expected_path = Path(lib)
         if not expected_path.exists():
             sys.exit(f"Error: {expected_path} does not exist!")
+
+    tag = os.environ["CI_COMMIT_TAG"]
+    version = tankerci.bump.version_from_git_tag(tag)
+    tankerci.bump.bump_files(version)
+
+    # Note: this commands also re-gerenates the lock as a side-effect since the
+    # gemspec has changed - keep this before the git commands
     tankerci.run("bundle", "install")
+
+    # Note: `bundle exec rake build` does not like dirty git repos, so make a
+    # commit with the new changes first
+    tankerci.git.run(Path.getcwd(), "add", "--update", ".")
+    tankerci.git.run(Path.getcwd(), "commit", "--message", f"Bump to {version}")
     tankerci.run("bundle", "exec", "rake", "build")
     tankerci.run("bundle", "exec", "rake", "push")
 
