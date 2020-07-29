@@ -101,6 +101,10 @@ def deploy() -> None:
         "vendor/libctanker/linux64/tanker/lib/libctanker.so",
         "vendor/libctanker/mac64/tanker/lib/libctanker.dylib",
     ]
+    # Note `bundle exec rake build` does not like dirty repos,
+    # so we make a dummy commit containing bump files now
+    tankerci.git.run("add", "--update", ".")
+    tankerci.git.run("commit", "m", f"Bump to {version}")
     tankerci.run("bundle", "exec", "rake", "build")
     tankerci.run("bundle", "exec", "rake", "push")
 
