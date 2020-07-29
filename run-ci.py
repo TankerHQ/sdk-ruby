@@ -10,7 +10,7 @@ import tankerci.bump
 import tankerci.conan
 import tankerci.git
 
-DEPLOYED_TANKER = "tanker/2.4.2-alpha1@tanker/stable"
+DEPLOYED_TANKER = "tanker/2.5.0@tanker/stable"
 LOCAL_TANKER = "tanker/dev@tanker/dev"
 
 
@@ -35,7 +35,6 @@ class Builder:
             "install", self.tanker_conan_ref,
             "--update",
             "--profile", profile,
-            "--options", "tanker:tankerlib_shared=True",
             "--install-folder", install_path,
             "--generator", "deploy"
         )
