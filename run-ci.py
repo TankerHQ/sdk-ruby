@@ -63,7 +63,9 @@ def create_builder(args: Any) -> Builder:
         tanker_conan_ref = LOCAL_TANKER
         workspace = tankerci.git.prepare_sources(repos=["sdk-native", "sdk-ruby"])
         src_path = workspace / "sdk-ruby"
-        tankerci.conan.export(src_path=workspace / "sdk-native", ref_or_channel="tanker/dev")
+        tankerci.conan.export(
+            src_path=workspace / "sdk-native", ref_or_channel="tanker/dev"
+        )
     else:
         raise RuntimeError("invalid argument")
 
