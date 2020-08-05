@@ -68,6 +68,25 @@ check/macos/deployed:
     paths:
       - vendor/libctanker/
 
+nightly/linux:
+  stage: check
+  only:
+    - schedules
+  tags: [linux]
+  script:
+    - export PATH=$HOME/.rbenv/versions/2.6.6/bin:$PATH
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile gcc8-release-shared
+
+nightly/macos:
+  variables:
+    RBENV_VERSION: 2.7.1
+  stage: check
+  only:
+    - schedules
+  tags: [macos]
+  script:
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile macos-release-shared
+
 deploy:
   stage: deploy
   when: manual
