@@ -2,6 +2,7 @@ from typing import Any
 import argparse
 import os
 import sys
+from enum import Enum
 
 from path import Path
 
@@ -14,10 +15,21 @@ DEPLOYED_TANKER = "tanker/2.5.0@tanker/stable"
 LOCAL_TANKER = "tanker/dev@tanker/dev"
 
 
+class TankerSource(Enum):
+    LOCAL = "local"
+    SAME_AS_BRANCH = "same-as-branch"
+    DEPLOYED = "deployed"
+
+
 class Builder:
-    def __init__(self, *, src_path: Path, tanker_conan_ref: str):
+    def __init__(self, *, src_path: Path, tanker_source: TankerSource):
         self.src_path = src_path
-        self.tanker_conan_ref = tanker_conan_ref
+        if tanker_source in [TankerSource.LOCAL, TankerSource.SAME_AS_BRANCH]:
+            self.tanker_conan_ref = LOCAL_TANKER
+            self.tanker_conan_extra_flags = ["--update", "--build=tanker"]
+        else:
+            self.tanker_conan_ref = DEPLOYED_TANKER
+            self.tanker_conan_extra_flags = []
         if sys.platform.startswith("linux"):
             self.arch = "linux64"
         else:
@@ -33,7 +45,7 @@ class Builder:
         # fmt: off
         tankerci.conan.run(
             "install", self.tanker_conan_ref,
-            "--update",
+            *self.tanker_conan_extra_flags,
             "--profile", profile,
             "--install-folder", install_path,
             "--generator", "deploy"
@@ -49,32 +61,26 @@ class Builder:
             tankerci.run("bundle", "exec", "rake", "spec")
 
 
-def create_builder(args: Any) -> Builder:
+def create_builder(tanker_source: TankerSource) -> Builder:
     src_path = Path.getcwd()
 
-    if args.use_tanker == "deployed":
-        tanker_conan_ref = DEPLOYED_TANKER
-    elif args.use_tanker == "local":
-        tanker_conan_ref = LOCAL_TANKER
+    if tanker_source == TankerSource.LOCAL:
         tankerci.conan.export(
             src_path=Path.getcwd().parent / "sdk-native", ref_or_channel="tanker/dev"
         )
-    elif args.use_tanker == "same-as-branch":
-        tanker_conan_ref = LOCAL_TANKER
+    elif tanker_source == TankerSource.SAME_AS_BRANCH:
         workspace = tankerci.git.prepare_sources(repos=["sdk-native", "sdk-ruby"])
         src_path = workspace / "sdk-ruby"
         tankerci.conan.export(
             src_path=workspace / "sdk-native", ref_or_channel="tanker/dev"
         )
-    else:
-        raise RuntimeError("invalid argument")
 
-    builder = Builder(src_path=src_path, tanker_conan_ref=tanker_conan_ref)
+    builder = Builder(src_path=src_path, tanker_source=tanker_source)
     return builder
 
 
 def build_and_test(args: Any) -> None:
-    builder = create_builder(args)
+    builder = create_builder(args.tanker_source)
     builder.install_ruby_deps()
     builder.install_sdk_native(profile=args.profile)
     builder.test()
@@ -124,7 +130,10 @@ def main() -> None:
 
     build_and_test_parser = subparsers.add_parser("build-and-test")
     build_and_test_parser.add_argument(
-        "--use-tanker", choices=["deployed", "local", "same-as-branch"], default="local"
+        "--use-tanker",
+        type=TankerSource,
+        default=TankerSource.LOCAL,
+        dest="tanker_source",
     )
     build_and_test_parser.add_argument("--profile", default="default")
 
