@@ -26,7 +26,7 @@ class Builder:
         self.src_path = src_path
         if tanker_source in [TankerSource.LOCAL, TankerSource.SAME_AS_BRANCH]:
             self.tanker_conan_ref = LOCAL_TANKER
-            self.tanker_conan_extra_flags = ["--update", "--build=tanker"]
+            self.tanker_conan_extra_flags = ["--build=tanker"]
         else:
             self.tanker_conan_ref = DEPLOYED_TANKER
             self.tanker_conan_extra_flags = []
@@ -45,6 +45,7 @@ class Builder:
         # fmt: off
         tankerci.conan.run(
             "install", self.tanker_conan_ref,
+            "--update",
             *self.tanker_conan_extra_flags,
             "--profile", profile,
             "--install-folder", install_path,
