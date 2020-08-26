@@ -10,15 +10,17 @@ import tankerci
 import tankerci.bump
 import tankerci.conan
 import tankerci.git
+import tankerci.gitlab
 
 DEPLOYED_TANKER = "tanker/2.5.0@tanker/stable"
-LOCAL_TANKER = "tanker/dev@tanker/dev"
+LOCAL_TANKER = "tanker/dev@"
 
 
 class TankerSource(Enum):
     LOCAL = "local"
     SAME_AS_BRANCH = "same-as-branch"
     DEPLOYED = "deployed"
+    UPSTREAM = "upstream"
 
 
 class Builder:
@@ -27,6 +29,9 @@ class Builder:
         if tanker_source in [TankerSource.LOCAL, TankerSource.SAME_AS_BRANCH]:
             self.tanker_conan_ref = LOCAL_TANKER
             self.tanker_conan_extra_flags = ["--build=tanker"]
+        elif tanker_source == TankerSource.UPSTREAM:
+            self.tanker_conan_ref = LOCAL_TANKER
+            self.tanker_conan_extra_flags = []
         else:
             self.tanker_conan_ref = DEPLOYED_TANKER
             self.tanker_conan_extra_flags = []
@@ -67,13 +72,23 @@ def create_builder(tanker_source: TankerSource) -> Builder:
 
     if tanker_source == TankerSource.LOCAL:
         tankerci.conan.export(
-            src_path=Path.getcwd().parent / "sdk-native", ref_or_channel="tanker/dev"
+            src_path=Path.getcwd().parent / "sdk-native", ref_or_channel=LOCAL_TANKER
+        )
+    elif tanker_source == TankerSource.UPSTREAM:
+        profile = "gcc8-release-shared"
+        package_folder = Path.getcwd() / "package" / profile
+
+        tankerci.conan.export_pkg(
+            Path.getcwd() / "package" / "conanfile.py",
+            profile=profile,
+            force=True,
+            package_folder=package_folder,
         )
     elif tanker_source == TankerSource.SAME_AS_BRANCH:
         workspace = tankerci.git.prepare_sources(repos=["sdk-native", "sdk-ruby"])
         src_path = workspace / "sdk-ruby"
         tankerci.conan.export(
-            src_path=workspace / "sdk-native", ref_or_channel="tanker/dev"
+            src_path=workspace / "sdk-native", ref_or_channel=LOCAL_TANKER
         )
 
     builder = Builder(src_path=src_path, tanker_source=tanker_source)
@@ -138,6 +153,14 @@ def main() -> None:
     )
     build_and_test_parser.add_argument("--profile", default="default")
 
+    reset_branch_parser = subparsers.add_parser("reset-branch")
+    reset_branch_parser.add_argument("branch")
+
+    download_artifacts_parser = subparsers.add_parser("download-artifacts")
+    download_artifacts_parser.add_argument("--project-id", required=True)
+    download_artifacts_parser.add_argument("--pipeline-id", required=True)
+    download_artifacts_parser.add_argument("--job-name", required=True)
+
     subparsers.add_parser("deploy")
     subparsers.add_parser("lint")
     subparsers.add_parser("mirror")
@@ -155,6 +178,17 @@ def main() -> None:
         deploy()
     elif command == "lint":
         lint()
+    elif command == "reset-branch":
+        ref = tankerci.git.find_ref(
+            Path.getcwd(), [f"origin/{args.branch}", "origin/master"]
+        )
+        tankerci.git.reset(Path.getcwd(), ref)
+    elif command == "download-artifacts":
+        tankerci.gitlab.download_artifacts(
+            project_id=args.project_id,
+            pipeline_id=args.pipeline_id,
+            job_name=args.job_name,
+        )
     elif args.command == "mirror":
         tankerci.git.mirror(github_url="git@github.com:TankerHQ/sdk-ruby")
     else:
