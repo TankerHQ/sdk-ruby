@@ -5,6 +5,22 @@ stages:
   - check
   - deploy
 
+.build-from-sources:
+  stage: check
+  rules:
+    - if: $CI_COMMIT_TAG == null && $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: true
+    - if: $CI_MERGE_REQUEST_ID == null && $CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME =~ /\Afeat\/.+\z/)
+
+.build-deployed:
+  stage: check
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: true
+
 lint:
   stage: check
   tags: [linux]
@@ -13,24 +29,21 @@ lint:
     - poetry run python run-ci.py lint
 
 check/linux/2.6:
-  stage: check
-  when: manual
+  extends: .build-from-sources
   tags: [linux]
   script:
     - export PATH=$HOME/.rbenv/versions/2.6.6/bin:$PATH
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile gcc8-release-shared
 
 check/linux/2.7:
-  stage: check
-  when: manual
+  extends: .build-from-sources
   tags: [linux]
   script:
     - export PATH=$HOME/.rbenv/versions/2.7.1/bin:$PATH
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile gcc8-release-shared
 
 check/linux/deployed/2.6:
-  stage: check
-  when: manual
+  extends: .build-deployed
   tags: [linux]
   script:
     - export PATH=$HOME/.rbenv/versions/2.6.6/bin:$PATH
@@ -40,8 +53,7 @@ check/linux/deployed/2.6:
       - vendor/libctanker/
 
 check/linux/deployed/2.7:
-  stage: check
-  when: manual
+  extends: .build-deployed
   tags: [linux]
   script:
     - export PATH=$HOME/.rbenv/versions/2.7.1/bin:$PATH
@@ -50,8 +62,7 @@ check/linux/deployed/2.7:
 check/macos:
   variables:
     RBENV_VERSION: 2.7.1
-  stage: check
-  when: manual
+  extends: .build-from-sources
   tags: [macos]
   script:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile macos-release-shared
@@ -59,8 +70,7 @@ check/macos:
 check/macos/deployed:
   variables:
     RBENV_VERSION: 2.7.1
-  stage: check
-  when: manual
+  extends: .build-deployed
   tags: [macos]
   script:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile macos-release-shared
@@ -70,8 +80,8 @@ check/macos/deployed:
 
 nightly/linux:
   stage: check
-  only:
-    - schedules
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
   tags: [linux]
   script:
     - export PATH=$HOME/.rbenv/versions/2.6.6/bin:$PATH
@@ -81,17 +91,17 @@ nightly/macos:
   variables:
     RBENV_VERSION: 2.7.1
   stage: check
-  only:
-    - schedules
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
   tags: [macos]
   script:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile macos-release-shared
 
 deploy:
   stage: deploy
-  when: manual
-  only:
-    - tags
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_TAG
+      when: manual
   tags: [linux]
   script:
     - export PATH=$HOME/.rbenv/versions/2.6.6/bin:$PATH
@@ -101,14 +111,14 @@ mirror:
   tags:
     - linux
   stage: deploy
-  only:
+  rules:
     # mirror public tags, releases branches
     # feature branches, and master
-    - /\Av[0-9.]+\z/
-    - master
-    - /\Arelease/.*\z/
-    - /\Afeat\/.+\z/   # feat/ branches
-  except:
-    - schedules
+    - if: $CI_PIPELINE_SOURCE != "push"
+      when: never
+    - if: $CI_COMMIT_REF_NAME =~ /\Av[0-9.]+\z/
+    - if: $CI_COMMIT_REF_NAME =~ /\Arelease\/.*\z/
+    - if: $CI_COMMIT_REF_NAME =~ /\Afeat\/.+\z/
+    - if: $CI_COMMIT_REF_NAME == "master"
   script:
     - poetry run python run-ci.py mirror
