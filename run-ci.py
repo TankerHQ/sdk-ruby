@@ -75,8 +75,6 @@ def create_builder(tanker_source: TankerSource) -> Builder:
             src_path=Path.getcwd().parent / "sdk-native", ref_or_channel=LOCAL_TANKER
         )
     elif tanker_source == TankerSource.UPSTREAM:
-        # remove the cache to get latest deps
-        tankerci.conan.run("remove", "*", "--force")
         profile = "gcc8-release-shared"
         package_folder = Path.getcwd() / "package" / profile
 
