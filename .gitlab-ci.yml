@@ -24,6 +24,8 @@ stages:
 lint:
   stage: check
   tags: [linux]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
     - export PATH=$HOME/.rbenv/versions/2.7.1/bin:$PATH
     - poetry run python run-ci.py lint
