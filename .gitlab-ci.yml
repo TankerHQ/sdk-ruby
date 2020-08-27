@@ -61,7 +61,7 @@ check/linux/deployed/2.7:
     - export PATH=$HOME/.rbenv/versions/2.7.1/bin:$PATH
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile gcc8-release-shared
 
-check/macos:
+check/macos/2.7:
   variables:
     RBENV_VERSION: 2.7.1
   extends: .build-from-sources
@@ -69,7 +69,7 @@ check/macos:
   script:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile macos-release-shared
 
-check/macos/deployed:
+check/macos/deployed/2.7:
   variables:
     RBENV_VERSION: 2.7.1
   extends: .build-deployed
@@ -80,7 +80,7 @@ check/macos/deployed:
     paths:
       - vendor/libctanker/
 
-check/macos/downstream:
+check/macos/downstream/2.7:
   variables:
     RBENV_VERSION: 2.7.1
   stage: check
