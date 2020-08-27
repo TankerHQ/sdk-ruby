@@ -67,7 +67,7 @@ class Builder:
             tankerci.run("bundle", "exec", "rake", "spec")
 
 
-def create_builder(tanker_source: TankerSource) -> Builder:
+def create_builder(tanker_source: TankerSource, *, profile: str) -> Builder:
     src_path = Path.getcwd()
 
     if tanker_source == TankerSource.LOCAL:
@@ -75,7 +75,6 @@ def create_builder(tanker_source: TankerSource) -> Builder:
             src_path=Path.getcwd().parent / "sdk-native", ref_or_channel=LOCAL_TANKER
         )
     elif tanker_source == TankerSource.UPSTREAM:
-        profile = "gcc8-release-shared"
         package_folder = Path.getcwd() / "package" / profile
 
         tankerci.conan.export_pkg(
@@ -96,7 +95,7 @@ def create_builder(tanker_source: TankerSource) -> Builder:
 
 
 def build_and_test(args: Any) -> None:
-    builder = create_builder(args.tanker_source)
+    builder = create_builder(args.tanker_source, profile=args.profile)
     builder.install_ruby_deps()
     builder.install_sdk_native(profile=args.profile)
     builder.test()
