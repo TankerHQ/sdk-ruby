@@ -134,7 +134,7 @@ RSpec.describe Tanker do
     bob.free
   end
 
-  it 'can self-revoke' do
+  skip 'can self-revoke' do
     tanker = Tanker::Core.new @options
     tanker.start_anonymous @app.create_identity
 
