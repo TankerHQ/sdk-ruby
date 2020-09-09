@@ -134,6 +134,7 @@ RSpec.describe Tanker do
     bob.free
   end
 
+  # This test is flaky, skipped while waiting for a fix
   skip 'can self-revoke' do
     tanker = Tanker::Core.new @options
     tanker.start_anonymous @app.create_identity
