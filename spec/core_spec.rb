@@ -134,8 +134,7 @@ RSpec.describe Tanker do
     bob.free
   end
 
-  # This test is flaky, skipped while waiting for a fix
-  skip 'can self-revoke' do
+  it 'can self-revoke' do
     tanker = Tanker::Core.new @options
     tanker.start_anonymous @app.create_identity
 
@@ -153,8 +152,10 @@ RSpec.describe Tanker do
       expect(error.code).to eq Tanker::Error::DEVICE_REVOKED
     end
     start = Time.now
-    until got_revoked_event # rubocop:disable Style/WhileUntilModifier stop asking me two opposite things
+    until got_revoked_event
       raise "timeout: didn't get revoked event" if Time.now - start > 2
+
+      sleep 0.1
     end
   end
 
