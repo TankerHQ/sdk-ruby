@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 import argparse
 import os
 import sys
@@ -12,8 +12,14 @@ import tankerci.conan
 import tankerci.git
 import tankerci.gitlab
 
-DEPLOYED_TANKER = "tanker/2.6.1@tanker/stable"
 LOCAL_TANKER = "tanker/dev@"
+
+
+def retrieve_conan_reference(*, recipe_dir: Path) -> str:
+    recipe_info = tankerci.conan.inspect(recipe_dir)
+    name = recipe_info["name"]
+    version = recipe_info["version"]
+    return f"{name}/{version}@"
 
 
 class TankerSource(Enum):
@@ -24,17 +30,16 @@ class TankerSource(Enum):
 
 
 class Builder:
-    def __init__(self, *, src_path: Path, tanker_source: TankerSource):
+    def __init__(
+        self,
+        *,
+        src_path: Path,
+        tanker_conan_ref: str,
+        tanker_conan_extra_flags: List[str],
+    ):
         self.src_path = src_path
-        if tanker_source in [TankerSource.LOCAL, TankerSource.SAME_AS_BRANCH]:
-            self.tanker_conan_ref = LOCAL_TANKER
-            self.tanker_conan_extra_flags = ["--build=tanker"]
-        elif tanker_source == TankerSource.UPSTREAM:
-            self.tanker_conan_ref = LOCAL_TANKER
-            self.tanker_conan_extra_flags = []
-        else:
-            self.tanker_conan_ref = DEPLOYED_TANKER
-            self.tanker_conan_extra_flags = []
+        self.tanker_conan_ref = tanker_conan_ref
+        self.tanker_conan_extra_flags = tanker_conan_extra_flags
         if sys.platform.startswith("linux"):
             self.arch = "linux64"
         else:
@@ -69,13 +74,16 @@ class Builder:
 
 def create_builder(tanker_source: TankerSource, *, profile: str) -> Builder:
     src_path = Path.getcwd()
+    tanker_conan_ref = LOCAL_TANKER
+    tanker_conan_extra_flags = []
 
-    if tanker_source == TankerSource.LOCAL:
-        tankerci.conan.export(
-            src_path=Path.getcwd().parent / "sdk-native", ref_or_channel=LOCAL_TANKER
-        )
+    if tanker_source == TankerSource.DEPLOYED:
+        tanker_conan_ref = os.environ["SDK_NATIVE_LATEST_CONAN_REFERENCE"]
     elif tanker_source == TankerSource.UPSTREAM:
-        package_folder = Path.getcwd() / "package" / profile
+        artifacts_folder = Path.getcwd() / "package"
+        package_folder = artifacts_folder / profile
+
+        tanker_conan_ref = retrieve_conan_reference(recipe_dir=artifacts_folder)
 
         tankerci.conan.export_pkg(
             Path.getcwd() / "package" / "conanfile.py",
@@ -83,14 +91,24 @@ def create_builder(tanker_source: TankerSource, *, profile: str) -> Builder:
             force=True,
             package_folder=package_folder,
         )
+    elif tanker_source == TankerSource.LOCAL:
+        tankerci.conan.export(
+            src_path=Path.getcwd().parent / "sdk-native", ref_or_channel=LOCAL_TANKER
+        )
+        tanker_conan_extra_flags.append("--build=tanker")
     elif tanker_source == TankerSource.SAME_AS_BRANCH:
         workspace = tankerci.git.prepare_sources(repos=["sdk-native", "sdk-ruby"])
         src_path = workspace / "sdk-ruby"
         tankerci.conan.export(
             src_path=workspace / "sdk-native", ref_or_channel=LOCAL_TANKER
         )
+        tanker_conan_extra_flags.append("--build=tanker")
 
-    builder = Builder(src_path=src_path, tanker_source=tanker_source)
+    builder = Builder(
+        src_path=src_path,
+        tanker_conan_ref=tanker_conan_ref,
+        tanker_conan_extra_flags=tanker_conan_extra_flags,
+    )
     return builder
 
 
@@ -106,7 +124,7 @@ def lint() -> None:
     tankerci.run("bundle", "exec", "rake", "rubocop")
 
 
-def deploy() -> None:
+def deploy(version: str) -> None:
     expected_libs = [
         "vendor/libctanker/linux64/tanker/lib/libctanker.so",
         "vendor/libctanker/mac64/tanker/lib/libctanker.dylib",
@@ -116,8 +134,6 @@ def deploy() -> None:
         if not expected_path.exists():
             sys.exit(f"Error: {expected_path} does not exist!")
 
-    tag = os.environ["CI_COMMIT_TAG"]
-    version = tankerci.bump.version_from_git_tag(tag)
     tankerci.bump.bump_files(version)
 
     # Note: this commands also re-gerenates the lock as a side-effect since the
@@ -160,7 +176,8 @@ def main() -> None:
     download_artifacts_parser.add_argument("--pipeline-id", required=True)
     download_artifacts_parser.add_argument("--job-name", required=True)
 
-    subparsers.add_parser("deploy")
+    deploy_parser = subparsers.add_parser("deploy")
+    deploy_parser.add_argument("--version", required=True)
     subparsers.add_parser("lint")
     subparsers.add_parser("mirror")
 
@@ -174,12 +191,13 @@ def main() -> None:
     if command == "build-and-test":
         build_and_test(args)
     elif command == "deploy":
-        deploy()
+        deploy(args.version)
     elif command == "lint":
         lint()
     elif command == "reset-branch":
+        fallback = os.environ["CI_COMMIT_REF_NAME"]
         ref = tankerci.git.find_ref(
-            Path.getcwd(), [f"origin/{args.branch}", "origin/master"]
+            Path.getcwd(), [f"origin/{args.branch}", f"origin/{fallback}"]
         )
         tankerci.git.reset(Path.getcwd(), ref)
     elif command == "download-artifacts":
