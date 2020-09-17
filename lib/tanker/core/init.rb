@@ -41,9 +41,6 @@ module Tanker
       CTanker.tanker_set_log_handler @log_handler
     end
 
-    # Do not spam the console of our users
-    set_log_handler { |_| }
-
     def connect_device_revoked_handler(&block)
       @revoke_event_handlers.add block
     end
