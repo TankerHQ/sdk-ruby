@@ -3,9 +3,34 @@
 module Tanker
   # Main entry point for the Tanker SDK. Can open a Tanker session.
   class Core
-    CTanker.tanker_init
+    @log_handler_lock = Mutex.new
+    @log_handler_set = 0
+
+    def self.test_and_set_log_handler
+      @log_handler_lock.synchronize do
+        is_set = @log_handler_set
+        @log_handler_set = 1
+        return is_set
+      end
+    end
+
+    def self.set_log_handler(&block) # rubocop:disable Naming/AccessorMethodName
+      @log_handler_set = 1
+      @log_handler = lambda do |clog|
+        block.call LogRecord.new clog[:category], clog[:level], clog[:file], clog[:line], clog[:message]
+      end
+      CTanker.tanker_set_log_handler @log_handler
+    end
 
     def initialize(options)
+      # tanker_init is not called globally to avoid potential logs at global scope
+      # some frameworks like to pre-execute statements at global scope and then fork, this fork can
+      # interact badly with the threads used in the log handler, so never call Tanker at global scope
+      CTanker.tanker_init
+
+      # Do not spam the console of our users.
+      self.class.set_log_handler { |_| } unless self.class.test_and_set_log_handler == 1
+
       @revoke_event_handlers = Set.new
       @ctanker = CTanker.tanker_create(options).get
       @freed = false
@@ -33,16 +58,6 @@ module Tanker
         end
       end
     end
-
-    def self.set_log_handler(&block) # rubocop:disable Naming/AccessorMethodName
-      @log_handler = lambda do |clog|
-        block.call LogRecord.new clog[:category], clog[:level], clog[:file], clog[:line], clog[:message]
-      end
-      CTanker.tanker_set_log_handler @log_handler
-    end
-
-    # Do not spam the console of our users
-    set_log_handler { |_| }
 
     def connect_device_revoked_handler(&block)
       @revoke_event_handlers.add block
