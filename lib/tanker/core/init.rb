@@ -3,9 +3,15 @@
 module Tanker
   # Main entry point for the Tanker SDK. Can open a Tanker session.
   class Core
-    CTanker.tanker_init
+    # Do not spam the console of our users. This must be done first to be effective.
+    set_log_handler { |_| }
 
     def initialize(options)
+      # tanker_init is not called globally to avoid potential logs at global scope
+      # some frameworks like to pre-execute statements at global scope and then fork, this fork can
+      # interact badly with the threads used in the log handler, so never call Tanker at global scope
+      CTanker.tanker_init
+
       @revoke_event_handlers = Set.new
       @ctanker = CTanker.tanker_create(options).get
       @freed = false
@@ -40,9 +46,6 @@ module Tanker
       end
       CTanker.tanker_set_log_handler @log_handler
     end
-
-    # Do not spam the console of our users
-    set_log_handler { |_| }
 
     def connect_device_revoked_handler(&block)
       @revoke_event_handlers.add block
