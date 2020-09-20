@@ -3,6 +3,13 @@
 module Tanker
   # Main entry point for the Tanker SDK. Can open a Tanker session.
   class Core
+    def self.set_log_handler(&block) # rubocop:disable Naming/AccessorMethodName
+      @log_handler = lambda do |clog|
+        block.call LogRecord.new clog[:category], clog[:level], clog[:file], clog[:line], clog[:message]
+      end
+      CTanker.tanker_set_log_handler @log_handler
+    end
+
     # Do not spam the console of our users. This must be done first to be effective.
     set_log_handler { |_| }
 
@@ -38,13 +45,6 @@ module Tanker
           raise "using Tanker::Core##{method} after free"
         end
       end
-    end
-
-    def self.set_log_handler(&block) # rubocop:disable Naming/AccessorMethodName
-      @log_handler = lambda do |clog|
-        block.call LogRecord.new clog[:category], clog[:level], clog[:file], clog[:line], clog[:message]
-      end
-      CTanker.tanker_set_log_handler @log_handler
     end
 
     def connect_device_revoked_handler(&block)
