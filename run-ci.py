@@ -12,7 +12,7 @@ import tankerci.conan
 import tankerci.git
 import tankerci.gitlab
 
-DEPLOYED_TANKER = "tanker/2.6.1@tanker/stable"
+DEPLOYED_TANKER = "tanker/2.6.2-beta6@tanker/stable"
 LOCAL_TANKER = "tanker/dev@"
 
 
