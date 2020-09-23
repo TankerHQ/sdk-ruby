@@ -3,6 +3,29 @@
 require 'English'
 require 'tanker/c_tanker'
 
+# Because Ruby only has synchronous streams, we can't read them on Tanker's
+# thread (in the read callback). To work around that, we start a new Thread for
+# each read operation. This is not that bad because Ruby uses a thread pool
+# behind the scenes and creating a Thread is usually just a work pushed on a
+# queue.
+#
+# Also, there doesn't seem to easily create an IO object. The simplest way is to
+# create a pipe. A pipe is a stream where you read everything you write into it.
+# Tanker streams however are pull streams, so there must be something that pulls
+# from the Tanker stream and pushes onto the IO stream. We start a long-running
+# thread for that which just loops.
+#
+# Because so much is happening in parallel, synchronization is not trivial.
+# There's one mutex per stream, and we lock that same mutex for every critical
+# section. Here are some important constraints that must be held:
+# - Do not copy data to the Tanker buffer if tanker_stream_close has been
+# called
+# - Do not call tanker_stream_read_operation_finish if tanker_stream_close has
+# been called
+# - On the output stream, do not call tanker_stream_read on a closed/closing
+# stream. Though it is ok to close the stream after the call, but before the
+# future is resolved.
+
 module Tanker
   class Core
     def encrypt_stream(stream, encryption_options = nil)
@@ -95,21 +118,6 @@ module Tanker
     end
   end
 
-  # IMPORTANT: about synchronization
-  # Because of a design flaw in the Tanker C streaming API, it is difficult to
-  # handle cancelation. When canceling a read (closing the stream), Tanker
-  # doesn't forward the cancelation request to the input stream (there's no
-  # callback for that), which means that the callback maybe writing to a buffer
-  # that's being freed. We worked around that by adding a mutex and locking it
-  # in both the output stream and the input stream.
-  # Things to be careful about:
-  # - Do not copy data to the Tanker buffer if tanker_stream_close has been
-  # called
-  # - Do not call tanker_stream_read_operation_finish if tanker_stream_close has
-  # been called
-  # - On the output stream, do not call tanker_stream_read on a closed/closing
-  # stream. Though it is ok to close the stream after the call, but before the
-  # future is resolved.
   class IoToTankerStreamWrapper
     attr_reader :error
     attr_reader :read_method
