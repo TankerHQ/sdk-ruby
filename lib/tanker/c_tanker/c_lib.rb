@@ -1,15 +1,10 @@
 # frozen_string_literal: true
 
+require 'ffi/platform'
+
 module Tanker::CTanker
   def self.get_path(name)
-    if /darwin/ =~ RUBY_PLATFORM
-      ext = '.dylib'
-      subdir = 'mac64'
-    else
-      ext = '.so'
-      subdir = 'linux64'
-    end
-
-    File.expand_path "../../../vendor/libctanker/#{subdir}/tanker/lib/lib#{name}#{ext}", __dir__
+    File.expand_path "../../../vendor/tanker/#{FFI::Platform::OS}-#{FFI::Platform::ARCH}/"\
+      "#{FFI::Platform::LIBPREFIX}#{name}.#{FFI::Platform::LIBSUFFIX}", __dir__
   end
 end

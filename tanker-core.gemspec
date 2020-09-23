@@ -27,8 +27,8 @@ Gem::Specification.new do |spec|
     'LICENSE',
     'lib/**/*',
     # Keep this in sync with run-ci.py
-    'vendor/libctanker/linux64/tanker/lib/libctanker.so',
-    'vendor/libctanker/mac64/tanker/lib/libctanker.dylib',
+    'vendor/tanker/linux-x86_64/libctanker.so',
+    'vendor/tanker/darwirn-x86_64/libctanker.dylib',
   ]
 
   spec.require_paths = ['lib']
