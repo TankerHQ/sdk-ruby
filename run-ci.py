@@ -1,8 +1,7 @@
-from typing import Any, List
+from typing import Any
 import argparse
 import os
 import sys
-from enum import Enum
 
 from path import Path
 
@@ -11,112 +10,19 @@ import tankerci.bump
 import tankerci.conan
 import tankerci.git
 import tankerci.gitlab
-
-LOCAL_TANKER = "tanker/dev@"
-
-
-def retrieve_conan_reference(*, recipe_dir: Path) -> str:
-    recipe_info = tankerci.conan.inspect(recipe_dir)
-    name = recipe_info["name"]
-    version = recipe_info["version"]
-    return f"{name}/{version}@"
+from tankerci.conan import TankerSource
 
 
-class TankerSource(Enum):
-    LOCAL = "local"
-    SAME_AS_BRANCH = "same-as-branch"
-    DEPLOYED = "deployed"
-    UPSTREAM = "upstream"
-
-
-class Builder:
-    def __init__(
-        self,
-        *,
-        src_path: Path,
-        tanker_conan_ref: str,
-        tanker_conan_extra_flags: List[str],
-    ):
-        self.src_path = src_path
-        self.tanker_conan_ref = tanker_conan_ref
-        self.tanker_conan_extra_flags = tanker_conan_extra_flags
-        if sys.platform.startswith("linux"):
-            self.arch = "linux64"
-        else:
-            self.arch = "mac64"
-
-    def get_build_path(self) -> Path:
-        build_path = self.src_path / "vendor/libctanker" / self.arch
-        build_path.makedirs_p()
-        return build_path
-
-    def install_sdk_native(self, *, profile: str) -> None:
-        install_path = self.get_build_path()
-        # fmt: off
-        tankerci.conan.run(
-            "install", self.tanker_conan_ref,
-            "--update",
-            *self.tanker_conan_extra_flags,
-            "--profile", profile,
-            "--install-folder", install_path,
-            "--generator", "deploy"
-        )
-        # fmt: on
-
-    def install_ruby_deps(self):
-        with self.src_path:
-            tankerci.run("bundle", "install")
-
-    def test(self) -> None:
-        with self.src_path:
-            tankerci.run("bundle", "exec", "rake", "spec")
-
-
-def create_builder(tanker_source: TankerSource, *, profile: str) -> Builder:
-    src_path = Path.getcwd()
-    tanker_conan_ref = LOCAL_TANKER
-    tanker_conan_extra_flags = []
-
-    if tanker_source == TankerSource.DEPLOYED:
-        tanker_conan_ref = os.environ["SDK_NATIVE_LATEST_CONAN_REFERENCE"]
-    elif tanker_source == TankerSource.UPSTREAM:
-        artifacts_folder = Path.getcwd() / "package"
-        package_folder = artifacts_folder / profile
-
-        tanker_conan_ref = retrieve_conan_reference(recipe_dir=artifacts_folder)
-
-        tankerci.conan.export_pkg(
-            Path.getcwd() / "package" / "conanfile.py",
-            profile=profile,
-            force=True,
-            package_folder=package_folder,
-        )
-    elif tanker_source == TankerSource.LOCAL:
-        tankerci.conan.export(
-            src_path=Path.getcwd().parent / "sdk-native", ref_or_channel=LOCAL_TANKER
-        )
-        tanker_conan_extra_flags.append("--build=tanker")
-    elif tanker_source == TankerSource.SAME_AS_BRANCH:
-        workspace = tankerci.git.prepare_sources(repos=["sdk-native", "sdk-ruby"])
-        src_path = workspace / "sdk-ruby"
-        tankerci.conan.export(
-            src_path=workspace / "sdk-native", ref_or_channel=LOCAL_TANKER
-        )
-        tanker_conan_extra_flags.append("--build=tanker")
-
-    builder = Builder(
-        src_path=src_path,
-        tanker_conan_ref=tanker_conan_ref,
-        tanker_conan_extra_flags=tanker_conan_extra_flags,
+def prepare(tanker_source: TankerSource, profile: str, update: bool) -> None:
+    tankerci.conan.install_tanker_source(
+        tanker_source, output_path=Path.getcwd() / "conan", profiles=[profile]
     )
-    return builder
 
 
-def build_and_test(args: Any) -> None:
-    builder = create_builder(args.tanker_source, profile=args.profile)
-    builder.install_ruby_deps()
-    builder.install_sdk_native(profile=args.profile)
-    builder.test()
+def build_and_test(tanker_source: TankerSource, profile: str) -> None:
+    prepare(tanker_source, profile, False)
+    tankerci.run("bundle", "install")
+    tankerci.run("bundle", "exec", "rake", "spec")
 
 
 def lint() -> None:
@@ -126,8 +32,8 @@ def lint() -> None:
 
 def deploy(version: str) -> None:
     expected_libs = [
-        "vendor/libctanker/linux64/tanker/lib/libctanker.so",
-        "vendor/libctanker/mac64/tanker/lib/libctanker.dylib",
+        "vendor/tanker/linux-x86_64/libctanker.so",
+        "vendor/tanker/darwrin-x86_64/libctanker.dylib",
     ]
     for lib in expected_libs:
         expected_path = Path(lib)
@@ -163,10 +69,25 @@ def main() -> None:
     build_and_test_parser.add_argument(
         "--use-tanker",
         type=TankerSource,
-        default=TankerSource.LOCAL,
+        default=TankerSource.EDITABLE,
         dest="tanker_source",
     )
     build_and_test_parser.add_argument("--profile", default="default")
+
+    prepare_parser = subparsers.add_parser("prepare")
+    prepare_parser.add_argument(
+        "--use-tanker",
+        type=TankerSource,
+        default=TankerSource.EDITABLE,
+        dest="tanker_source",
+    )
+    prepare_parser.add_argument("--profile", default="default")
+    prepare_parser.add_argument(
+        "--update",
+        action="store_true",
+        default=False,
+        dest="update",
+    )
 
     reset_branch_parser = subparsers.add_parser("reset-branch")
     reset_branch_parser.add_argument("branch")
@@ -189,7 +110,13 @@ def main() -> None:
 
     command = args.command
     if command == "build-and-test":
-        build_and_test(args)
+        build_and_test(args.tanker_source, args.profile)
+    elif command == "prepare":
+        prepare(
+            args.tanker_source,
+            args.profile,
+            args.update,
+        )
     elif command == "deploy":
         deploy(args.version)
     elif command == "lint":
