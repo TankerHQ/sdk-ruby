@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Optional
 import argparse
 import os
 import sys
@@ -13,14 +13,24 @@ import tankerci.gitlab
 from tankerci.conan import TankerSource
 
 
-def prepare(tanker_source: TankerSource, profile: str, update: bool) -> None:
+def prepare(
+    tanker_source: TankerSource,
+    profile: str,
+    update: bool,
+    tanker_ref: Optional[str] = None,
+) -> None:
     tankerci.conan.install_tanker_source(
-        tanker_source, output_path=Path.getcwd() / "conan", profiles=[profile]
+        tanker_source,
+        output_path=Path.getcwd() / "conan",
+        profiles=[profile],
+        tanker_deployed_ref=tanker_ref,
     )
 
 
-def build_and_test(tanker_source: TankerSource, profile: str) -> None:
-    prepare(tanker_source, profile, False)
+def build_and_test(
+    tanker_source: TankerSource, profile: str, tanker_ref: Optional[str] = None
+) -> None:
+    prepare(tanker_source, profile, False, tanker_ref)
     tankerci.run("bundle", "install")
     tankerci.run("bundle", "exec", "rake", "spec")
 
@@ -73,6 +83,7 @@ def main() -> None:
         dest="tanker_source",
     )
     build_and_test_parser.add_argument("--profile", default="default")
+    build_and_test_parser.add_argument("--tanker-ref")
 
     prepare_parser = subparsers.add_parser("prepare")
     prepare_parser.add_argument(
@@ -82,6 +93,7 @@ def main() -> None:
         dest="tanker_source",
     )
     prepare_parser.add_argument("--profile", default="default")
+    prepare_parser.add_argument("--tanker-ref")
     prepare_parser.add_argument(
         "--update",
         action="store_true",
@@ -110,12 +122,13 @@ def main() -> None:
 
     command = args.command
     if command == "build-and-test":
-        build_and_test(args.tanker_source, args.profile)
+        build_and_test(args.tanker_source, args.profile, args.tanker_ref)
     elif command == "prepare":
         prepare(
             args.tanker_source,
             args.profile,
             args.update,
+            args.tanker_ref,
         )
     elif command == "deploy":
         deploy(args.version)
