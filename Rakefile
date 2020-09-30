@@ -16,6 +16,8 @@ def vendor_arch
   "#{FFI::Platform::OS}-#{FFI::Platform::ARCH}"
 end
 
+task 'copy_tanker_libs'
+
 def copy_tanker
   build_infos = Dir.glob('conan/*/conanbuildinfo.json')
   raise 'too many profile' if build_infos.size > 1
