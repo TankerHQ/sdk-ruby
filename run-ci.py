@@ -60,7 +60,7 @@ def deploy(version: str) -> None:
     # commit with the new changes first
     tankerci.git.run(Path.getcwd(), "add", "--update", ".")
     tankerci.git.run(Path.getcwd(), "commit", "--message", f"Bump to {version}")
-    tankerci.run("bundle", "exec", "rake", "build")
+    tankerci.run("bundle", "exec", "rake", "build", "--trace")
     tankerci.run("bundle", "exec", "rake", "push")
 
 
