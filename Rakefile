@@ -16,7 +16,8 @@ def vendor_arch
   "#{FFI::Platform::OS}-#{FFI::Platform::ARCH}"
 end
 
-def copy_tanker
+def define_copy_tanker
+  task copy_tanker_libs:
   build_infos = Dir.glob('conan/*/conanbuildinfo.json')
   raise 'too many profile' if build_infos.size > 1
   return if build_infos.size.zero?
@@ -38,11 +39,20 @@ def copy_tanker
     task copy_tanker_libs: target_lib
   end
 end
-copy_tanker
+define_copy_tanker
 
-task install: :copy_tanker_libs
-task build: :copy_tanker_libs
-task spec: :copy_tanker_libs
+task :tanker_libs do
+  libs = Dir.glob("vendor/tanker/#{vendor_arch}/#{map_library_name('ctanker')}")
+  raise 'no vendor library present and no build infos to get it from' if libs.size.zero?
+
+  task 'copy_tanker_libs'
+end
+
+task tanker_libs: :copy_tanker_libs
+
+task install: :tanker_libs
+task build: :tanker_libs
+task spec: :tanker_libs
 
 Gem::Tasks.new
 Bundler::Audit::Task.new
