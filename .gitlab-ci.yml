@@ -121,7 +121,7 @@ check/downstream/release/macos/2.7:
     - .rules/check/downstream/release
     - .release-artifacts
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile macos-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile macos-release-shared
   variables:
     RBENV_VERSION: 2.7.1
 
