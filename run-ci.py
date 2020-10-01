@@ -118,12 +118,18 @@ def main() -> None:
     subparsers.add_parser("mirror")
 
     args = parser.parse_args()
+    command = args.command
 
     if args.home_isolation:
         tankerci.conan.set_home_isolation()
         tankerci.conan.update_config()
+        if command == "build-and-test":
+            # Because of GitLab issue https://gitlab.com/gitlab-org/gitlab/-/issues/254323
+            # the downstream deploy jobs will be triggered even if upstream has failed
+            # By removing the cache we ensure that we do not use a
+            # previously built (and potentially broken) release candidate to deploy a binding
+            tankerci.conan.run("remove", "*", "--force")
 
-    command = args.command
     if command == "build-and-test":
         build_and_test(args.tanker_source, args.profile, args.tanker_ref)
     elif command == "prepare":
