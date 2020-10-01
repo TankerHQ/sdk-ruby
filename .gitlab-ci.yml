@@ -39,7 +39,7 @@ check/deployed-native/linux/2.6:
     - .check
     - .tags/linux
     - .before-script/rbenv-path
-    - .rules/deployed-native
+    - .rules/deployed-native/ruby
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.6.6
@@ -51,7 +51,7 @@ check/deployed-native/linux/2.7:
     - .check
     - .tags/linux
     - .before-script/rbenv-path
-    - .rules/deployed-native
+    - .rules/deployed-native/ruby
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.7.1
@@ -72,7 +72,7 @@ check/deployed-native/macos/2.7:
   extends:
     - .check
     - .tags/macos
-    - .rules/deployed-native
+    - .rules/deployed-native/ruby
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.7.1
