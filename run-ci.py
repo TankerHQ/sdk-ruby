@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Optional
 import argparse
 import os
 import sys
@@ -13,14 +13,27 @@ import tankerci.gitlab
 from tankerci.conan import TankerSource
 
 
-def prepare(tanker_source: TankerSource, profile: str, update: bool) -> None:
+def prepare(
+    tanker_source: TankerSource,
+    profile: str,
+    update: bool,
+    tanker_ref: Optional[str],
+) -> None:
+    tanker_deployed_ref = tanker_ref
+    if tanker_source == TankerSource.DEPLOYED and not tanker_deployed_ref:
+        tanker_deployed_ref = "tanker/latest-stable@"
     tankerci.conan.install_tanker_source(
-        tanker_source, output_path=Path.getcwd() / "conan", profiles=[profile]
+        tanker_source,
+        output_path=Path.getcwd() / "conan",
+        profiles=[profile],
+        tanker_deployed_ref=tanker_deployed_ref,
     )
 
 
-def build_and_test(tanker_source: TankerSource, profile: str) -> None:
-    prepare(tanker_source, profile, False)
+def build_and_test(
+    tanker_source: TankerSource, profile: str, tanker_ref: Optional[str]
+) -> None:
+    prepare(tanker_source, profile, False, tanker_ref)
     tankerci.run("bundle", "install")
     tankerci.run("bundle", "exec", "rake", "spec")
 
@@ -33,7 +46,7 @@ def lint() -> None:
 def deploy(version: str) -> None:
     expected_libs = [
         "vendor/tanker/linux-x86_64/libctanker.so",
-        "vendor/tanker/darwrin-x86_64/libctanker.dylib",
+        "vendor/tanker/darwin-x86_64/libctanker.dylib",
     ]
     for lib in expected_libs:
         expected_path = Path(lib)
@@ -73,6 +86,7 @@ def main() -> None:
         dest="tanker_source",
     )
     build_and_test_parser.add_argument("--profile", default="default")
+    build_and_test_parser.add_argument("--tanker-ref")
 
     prepare_parser = subparsers.add_parser("prepare")
     prepare_parser.add_argument(
@@ -82,6 +96,7 @@ def main() -> None:
         dest="tanker_source",
     )
     prepare_parser.add_argument("--profile", default="default")
+    prepare_parser.add_argument("--tanker-ref")
     prepare_parser.add_argument(
         "--update",
         action="store_true",
@@ -103,19 +118,26 @@ def main() -> None:
     subparsers.add_parser("mirror")
 
     args = parser.parse_args()
+    command = args.command
 
     if args.home_isolation:
         tankerci.conan.set_home_isolation()
         tankerci.conan.update_config()
+        if command == "build-and-test":
+            # Because of GitLab issue https://gitlab.com/gitlab-org/gitlab/-/issues/254323
+            # the downstream deploy jobs will be triggered even if upstream has failed
+            # By removing the cache we ensure that we do not use a
+            # previously built (and potentially broken) release candidate to deploy a binding
+            tankerci.conan.run("remove", "tanker/*", "--force")
 
-    command = args.command
     if command == "build-and-test":
-        build_and_test(args.tanker_source, args.profile)
+        build_and_test(args.tanker_source, args.profile, args.tanker_ref)
     elif command == "prepare":
         prepare(
             args.tanker_source,
             args.profile,
             args.update,
+            args.tanker_ref,
         )
     elif command == "deploy":
         deploy(args.version)

@@ -1,6 +1,6 @@
 include:
   project: TankerHQ/gitlab-ci-files
-  ref: d64afad9fec4726e0b43f9d965904885bbb893da
+  ref: 21ee71ff504eb0d9171f06bae9d77e106dfac35f
   file: /ruby.yml
 
 ###############
@@ -39,24 +39,24 @@ check/deployed-native/linux/2.6:
     - .check
     - .tags/linux
     - .before-script/rbenv-path
-    - .rules/deployed-native
+    - .rules/deployed-native/ruby
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.6.6
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile gcc8-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile gcc8-release-shared
 
 check/deployed-native/linux/2.7:
   extends:
     - .check
     - .tags/linux
     - .before-script/rbenv-path
-    - .rules/deployed-native
+    - .rules/deployed-native/ruby
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.7.1
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile gcc8-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile gcc8-release-shared
 
 check/native-from-sources/macos/2.7:
   extends:
@@ -72,12 +72,12 @@ check/deployed-native/macos/2.7:
   extends:
     - .check
     - .tags/macos
-    - .rules/deployed-native
+    - .rules/deployed-native/ruby
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.7.1
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile macos-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile macos-release-shared
 
 check/downstream/linux/2.6:
   extends:
@@ -99,29 +99,6 @@ check/downstream/macos/2.7:
     - .before-script/download-artifacts
   script:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=upstream --profile macos-release-shared
-  variables:
-    RBENV_VERSION: 2.7.1
-
-check/downstream/release/linux/2.6:
-  extends:
-    - .check/downstream/release/linux
-  variables:
-    RBENV_VERSION: 2.6.6
-
-check/downstream/release/linux/2.7:
-  extends:
-    - .check/downstream/release/linux
-  variables:
-    RBENV_VERSION: 2.7.1
-
-check/downstream/release/macos/2.7:
-  extends:
-    - .check
-    - .tags/macos
-    - .rules/check/downstream/release
-    - .release-artifacts
-  script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --profile macos-release-shared
   variables:
     RBENV_VERSION: 2.7.1
 
