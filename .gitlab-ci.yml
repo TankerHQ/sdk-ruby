@@ -1,6 +1,6 @@
 include:
   project: TankerHQ/gitlab-ci-files
-  ref: 09985a8d5d7b6975d4abdebdcea1fd052534d31b
+  ref: ec4e2cec97e6746c93a0422b809538478e776ef0
   file: /ruby.yml
 
 ###############
@@ -39,7 +39,7 @@ check/deployed-native/linux/2.6:
     - .check
     - .tags/linux
     - .before-script/rbenv-path
-    - .rules/deployed-native/ruby
+    - .rules/deployed-native/release-artifacts
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.6.6
@@ -51,7 +51,7 @@ check/deployed-native/linux/2.7:
     - .check
     - .tags/linux
     - .before-script/rbenv-path
-    - .rules/deployed-native/ruby
+    - .rules/deployed-native/release-artifacts
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.7.1
@@ -72,7 +72,7 @@ check/deployed-native/macos/2.7:
   extends:
     - .check
     - .tags/macos
-    - .rules/deployed-native/ruby
+    - .rules/deployed-native/release-artifacts
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.7.1
