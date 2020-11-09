@@ -182,14 +182,15 @@ module Tanker
     def initialize(tanker_stream, substream)
       @tanker_stream = tanker_stream
       @substream = substream
-
-      # The user will only read on the pipe, so we need something that reads
-      # from Tanker and writes to the pipe, it's this thread.
-      Thread.new { read_thread }
     end
 
     def init_io
       read, @write = IO.pipe
+
+      # The user will only read on the pipe, so we need something that reads
+      # from Tanker and writes to the pipe, it's this thread.
+      Thread.new { read_thread }
+
       read
     end
 
