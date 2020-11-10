@@ -117,7 +117,7 @@ deploy:
   variables:
     RBENV_VERSION: 2.6.6
   release:
-    description: sdk-python v$SDK_RUBY_RELEASE_VERSION
+    description: sdk-ruby v$SDK_RUBY_RELEASE_VERSION
     tag_name: v$SDK_RUBY_RELEASE_VERSION
 
 mirror:
