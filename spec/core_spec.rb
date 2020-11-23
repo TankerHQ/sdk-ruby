@@ -25,9 +25,10 @@ RSpec.describe Tanker do
 
   it 'fails to create an invalid Tanker object' do
     options = Tanker::Core::Options.new app_id: 'bad app id', writable_path: ':memory:'
-    expect { Tanker::Core.new options }.to(raise_error) do |error|
-      expect(error).to be_a(Tanker::Error)
-      expect(error.code).to eq Tanker::Error::INVALID_ARGUMENT
+    expect { Tanker::Core.new options }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
     end
   end
 
@@ -123,7 +124,9 @@ RSpec.describe Tanker do
     encryption_options = Tanker::EncryptionOptions.new(share_with_users: [bob_public_identity], share_with_self: false)
     ciphertext = alice.encrypt_utf8 plaintext, encryption_options
 
-    expect { alice.decrypt_utf8 ciphertext }.to raise_error(Tanker::Error) do |e|
+    expect { alice.decrypt_utf8 ciphertext }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
       expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
     end
 
@@ -147,9 +150,10 @@ RSpec.describe Tanker do
     end
 
     tanker.revoke_device tanker.device_id
-    expect { tanker.encrypt_utf8 'What could possibly go wrong?' }.to(raise_error) do |error|
-      expect(error).to be_a(Tanker::Error)
-      expect(error.code).to eq Tanker::Error::DEVICE_REVOKED
+    expect { tanker.encrypt_utf8 'What could possibly go wrong?' }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::DeviceRevoked)
+      expect(e.code).to eq(Tanker::Error::DEVICE_REVOKED)
     end
     start = Time.now
     until got_revoked_event
@@ -172,9 +176,10 @@ RSpec.describe Tanker do
   end
 
   it 'fails to prehash_password the empty string' do
-    expect { Tanker::Core.prehash_password '' }.to(raise_error) do |error|
-      expect(error).to be_a(Tanker::Error)
-      expect(error.code).to eq Tanker::Error::INVALID_ARGUMENT
+    expect { Tanker::Core.prehash_password '' }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
     end
   end
 
