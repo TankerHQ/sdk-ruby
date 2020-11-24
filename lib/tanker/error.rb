@@ -11,6 +11,7 @@ module Tanker
     def initialize(ctanker_error)
       @code = ctanker_error[:error_code]
       @message = ctanker_error[:error_message]
+      super(@message)
     end
 
     # Error code constants
