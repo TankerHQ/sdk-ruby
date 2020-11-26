@@ -72,7 +72,9 @@ RSpec.describe "#{Tanker} Encryption Sessions" do
 
     encrypted = sess.encrypt_utf8 plaintext
 
-    expect { @alice.decrypt_utf8 encrypted }.to raise_error(Tanker::Error) do |e|
+    expect { @alice.decrypt_utf8 encrypted }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
       expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
     end
 
@@ -102,9 +104,10 @@ RSpec.describe "#{Tanker} Encryption Sessions" do
     cipher_private = sess_private.encrypt_utf8 plaintext
 
     expect(@bob.decrypt_utf8(cipher_shared)).to eq(plaintext)
-    expect { @bob.decrypt_utf8(cipher_private) }.to(raise_error) do |error|
-      expect(error).to be_a(Tanker::Error)
-      expect(error.code).to eq Tanker::Error::INVALID_ARGUMENT
+    expect { @bob.decrypt_utf8(cipher_private) }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
     end
   end
 end

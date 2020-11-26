@@ -33,9 +33,10 @@ RSpec.describe "#{Tanker} Groups" do
   end
 
   it 'cannot create an empty group' do
-    expect { @alice.create_group [] }.to(raise_error) do |error|
-      expect(error).to be_a(Tanker::Error)
-      expect(error.code).to eq Tanker::Error::INVALID_ARGUMENT
+    expect { @alice.create_group [] }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
     end
   end
 

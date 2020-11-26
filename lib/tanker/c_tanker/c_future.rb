@@ -25,7 +25,7 @@ module Tanker
         CTanker.tanker_future_wait @cfuture
         if CTanker.tanker_future_has_error @cfuture
           cerr = CTanker.tanker_future_get_error @cfuture
-          raise Error, cerr
+          raise Error.from_ctanker_error(cerr)
         else
           CTanker.tanker_future_get_voidptr @cfuture
         end
