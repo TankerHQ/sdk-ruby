@@ -15,7 +15,6 @@ module Tanker
     end
 
     # Error code constants
-    NO_ERROR = 0
     INVALID_ARGUMENT = 1
     INTERNAL_ERROR = 2
     NETWORK_ERROR = 3
