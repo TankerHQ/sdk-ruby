@@ -186,6 +186,8 @@ module Tanker
 
     def init_io
       read, @write = IO.pipe
+      @write.binmode
+      read.binmode
 
       # The user will only read on the pipe, so we need something that reads
       # from Tanker and writes to the pipe, it's this thread.

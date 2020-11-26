@@ -4,6 +4,32 @@ require_relative 'admin_helper'
 require 'tanker/core'
 require 'tanker/identity'
 
+def without_warnings
+  old_verbose = $VERBOSE
+  $VERBOSE = nil
+  yield
+ensure
+  $VERBOSE = old_verbose
+end
+
+def with_default_encoding(encoding)
+  old_internal_encoding = nil
+  old_external_encoding = nil
+  # Changing default encodings triggers a warning, but we need it for tests
+  without_warnings do
+    old_internal_encoding = Encoding.default_internal
+    old_external_encoding = Encoding.default_external
+    Encoding.default_internal = encoding
+    Encoding.default_external = encoding
+  end
+  yield
+ensure
+  without_warnings do
+    Encoding.default_internal = old_internal_encoding
+    Encoding.default_external = old_external_encoding
+  end
+end
+
 RSpec.describe "#{Tanker} streams" do
   before(:all) do
     Tanker::App.use_test_log_handler
@@ -27,8 +53,37 @@ RSpec.describe "#{Tanker} streams" do
     ciphertext = out_stream.read
     out_stream.close
 
+    expect(ciphertext.encoding).to eq(Encoding::ASCII_8BIT)
     decrypted = @tanker.decrypt_utf8 ciphertext
     expect(decrypted).to eq(plaintext)
+  end
+
+  it 'can encrypt a stream and decrypt back with UTF-8 default internal encoding' do
+    with_default_encoding(Encoding::UTF_8) do
+      plaintext = 'la ram c\'est du cpu!'
+      in_stream = StringIO.new(plaintext)
+      out_stream = @tanker.encrypt_stream in_stream
+      ciphertext = out_stream.read
+      out_stream.close
+
+      expect(ciphertext.encoding).to eq(Encoding::ASCII_8BIT)
+      decrypted = @tanker.decrypt_utf8 ciphertext
+      expect(decrypted).to eq(plaintext)
+    end
+  end
+
+  it 'can encrypt a stream and decrypt back with ASCII-8BIT default external encoding' do
+    with_default_encoding(Encoding::ASCII_8BIT) do
+      plaintext = 'la ram c\'est du cpu!'
+      in_stream = StringIO.new(plaintext)
+      out_stream = @tanker.encrypt_stream in_stream
+      ciphertext = out_stream.read
+      out_stream.close
+
+      expect(ciphertext.encoding).to eq(Encoding::ASCII_8BIT)
+      decrypted = @tanker.decrypt_utf8 ciphertext
+      expect(decrypted).to eq(plaintext)
+    end
   end
 
   it 'can encrypt and decrypt a stream' do
@@ -41,6 +96,7 @@ RSpec.describe "#{Tanker} streams" do
     decrypted = decrypted_stream.read
     decrypted_stream.close
 
+    expect(decrypted.encoding).to eq(Encoding::ASCII_8BIT)
     expect(decrypted).to eq(plaintext)
     encrypted_stream.close
   end
