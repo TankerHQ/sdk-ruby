@@ -28,6 +28,7 @@ module Tanker
     IO_ERROR = 11
     DEVICE_REVOKED = 12
     CONFLICT = 13
+    UPGRADE_REQUIRED = 14
 
     # Error subclasses
     class InvalidArgument < self; end
@@ -43,6 +44,7 @@ module Tanker
     class IOError < self; end
     class DeviceRevoked < self; end
     class Conflict < self; end
+    class UpgradeRequired < self; end
 
     class << self
       ERROR_CODE_TO_CLASS = {
@@ -58,7 +60,8 @@ module Tanker
         EXPIRED_VERIFICATION => ExpiredVerification,
         IO_ERROR => IOError,
         DEVICE_REVOKED => DeviceRevoked,
-        CONFLICT => Conflict
+        CONFLICT => Conflict,
+        UPGRADE_REQUIRED => UpgradeRequired
       }.freeze
 
       private_constant :ERROR_CODE_TO_CLASS
