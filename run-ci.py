@@ -1,9 +1,9 @@
 from typing import Optional
 import argparse
 import os
+from pathlib import Path
 import sys
 
-from path import Path
 
 import tankerci
 import tankerci.bump
@@ -24,7 +24,7 @@ def prepare(
         tanker_deployed_ref = "tanker/latest-stable@"
     tankerci.conan.install_tanker_source(
         tanker_source,
-        output_path=Path.getcwd() / "conan",
+        output_path=Path.cwd() / "conan",
         profiles=[profile],
         tanker_deployed_ref=tanker_deployed_ref,
     )
@@ -61,8 +61,8 @@ def deploy(version: str) -> None:
 
     # Note: `bundle exec rake build` does not like dirty git repos, so make a
     # commit with the new changes first
-    tankerci.git.run(Path.getcwd(), "add", "--update", ".")
-    tankerci.git.run(Path.getcwd(), "commit", "--message", f"Bump to {version}")
+    tankerci.git.run(Path.cwd(), "add", "--update", ".")
+    tankerci.git.run(Path.cwd(), "commit", "--message", f"Bump to {version}")
     tankerci.run("bundle", "exec", "rake", "build")
     tankerci.run("bundle", "exec", "rake", "push")
 
@@ -146,9 +146,9 @@ def main() -> None:
     elif command == "reset-branch":
         fallback = os.environ["CI_COMMIT_REF_NAME"]
         ref = tankerci.git.find_ref(
-            Path.getcwd(), [f"origin/{args.branch}", f"origin/{fallback}"]
+            Path.cwd(), [f"origin/{args.branch}", f"origin/{fallback}"]
         )
-        tankerci.git.reset(Path.getcwd(), ref)
+        tankerci.git.reset(Path.cwd(), ref)
     elif command == "download-artifacts":
         tankerci.gitlab.download_artifacts(
             project_id=args.project_id,
