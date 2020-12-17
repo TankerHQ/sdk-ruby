@@ -559,7 +559,7 @@ widechars = ["wcwidth"]
 
 [[package]]
 name = "tankerci"
-version = "2020.12.dev3122"
+version = "2020.12.3123"
 description = "Tanker CI library"
 category = "main"
 optional = false
@@ -687,7 +687,7 @@ testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "974b1c34bdba138d1f3f479f5859fdb53837a83c0e47cce912b6424908c8153b"
+content-hash = "49565f34d11c83bb92d72bc668e0d3215b0a70a53c8eb7dae365986aaf617a5d"
 
 [metadata.files]
 appdirs = [
@@ -1018,8 +1018,8 @@ tabulate = [
     {file = "tabulate-0.8.7.tar.gz", hash = "sha256:db2723a20d04bcda8522165c73eea7c300eda74e0ce852d9022e0159d7895007"},
 ]
 tankerci = [
-    {file = "tankerci-2020.12.dev3122-py3-none-any.whl", hash = "sha256:f470737eb8f14037dd1832687a066e0210f8aacc7031a1ad2966695b2fcb8683"},
-    {file = "tankerci-2020.12.dev3122.tar.gz", hash = "sha256:00524430a5184f46f74122d724e3ebb64bf0ba80d35329c5febdeb2087d00d56"},
+    {file = "tankerci-2020.12.3123-py3-none-any.whl", hash = "sha256:df71e1d2c18922f9c1abcef69923c887bb3796cd8ca3002d4424509b0ae3b209"},
+    {file = "tankerci-2020.12.3123.tar.gz", hash = "sha256:5c8ad1957a0d022fbde28ae81ecc9a15d9051f53f78b7fe1715fbf9d83ebbb72"},
 ]
 tbump = [
     {file = "tbump-6.2.0-py3-none-any.whl", hash = "sha256:eb85c720b143e3c309d2cff73326f9de16e411edd0436a20b9d293de54884eea"},
