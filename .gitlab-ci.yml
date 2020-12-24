@@ -1,6 +1,6 @@
 include:
   project: TankerHQ/gitlab-ci-files
-  ref: 98ea16a090e6414744cd107c170505b715e92545
+  ref: 4b9ae23b9ee4d88488d645d4af71188c28c634e3
   file: /ruby.yml
 
 ###############
@@ -14,7 +14,7 @@ lint:
     - .rules/mr/auto
     - .before-script/rbenv-path
   variables:
-    RBENV_VERSION: 2.7.1
+    RBENV_VERSION: 2.7.2
   script:
     - poetry run python run-ci.py lint
 
@@ -32,7 +32,7 @@ check/native-from-sources/linux/2.7:
     - .tags/linux
     - .check/native-from-sources/linux
   variables:
-    RBENV_VERSION: 2.7.1
+    RBENV_VERSION: 2.7.2
 
 check/deployed-native/linux/2.6:
   extends:
@@ -54,7 +54,7 @@ check/deployed-native/linux/2.7:
     - .rules/deployed-native/release-artifacts
     - .release-artifacts
   variables:
-    RBENV_VERSION: 2.7.1
+    RBENV_VERSION: 2.7.2
   script:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile gcc8-release-shared
 
@@ -89,7 +89,7 @@ check/downstream/linux/2.7:
   extends:
     - .check/downstream/linux
   variables:
-    RBENV_VERSION: 2.7.1
+    RBENV_VERSION: 2.7.2
 
 check/downstream/macos/2.7:
   extends:
