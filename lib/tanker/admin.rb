@@ -7,10 +7,11 @@ require_relative 'admin/app'
 
 module Tanker
   class Admin
-    def initialize(admin_url, id_token, api_url)
+    def initialize(admin_url:, api_url:, trustchain_url:, id_token:)
       @admin_url = admin_url
       @id_token = id_token
       @api_url = api_url
+      @trustchain_url = trustchain_url
     end
 
     # Authenticate to the Tanker admin server API
@@ -27,7 +28,12 @@ module Tanker
       assert_connected
       descriptor_ptr = CAdmin.tanker_admin_create_app(@cadmin, name).get
       descriptor = CAdmin::CAppDescriptor.new(descriptor_ptr)
-      App.new(@api_url, descriptor[:id], descriptor[:auth_token], descriptor[:private_key])
+      App.new(
+        trustchain_url: @trustchain_url,
+        id: descriptor[:id],
+        auth_token: descriptor[:auth_token],
+        private_key: descriptor[:private_key]
+      )
     end
 
     def delete_app(app_id)
