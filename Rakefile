@@ -19,7 +19,7 @@ end
 def define_copy_tanker
   task copy_tanker_libs:
   build_infos = Dir.glob('conan/*/conanbuildinfo.json')
-  raise 'too many profile' if build_infos.size > 1
+  raise 'too many profiles' if build_infos.size > 1
   return if build_infos.size.zero?
 
   deps_info = JSON.parse File.read(build_infos[0])
