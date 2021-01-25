@@ -3,6 +3,8 @@
 module Tanker
   # Main entry point for the Tanker SDK. Can open a Tanker session.
   class Core
+    extend Gem::Deprecate
+
     @log_handler_lock = Mutex.new
     @log_handler_set = 0
 
@@ -62,6 +64,8 @@ module Tanker
     def connect_device_revoked_handler(&block)
       @revoke_event_handlers.add block
     end
+
+    deprecate :connect_device_revoked_handler, :none, 2021, 7
 
     def disconnect_handler(&block)
       @revoke_event_handlers.delete block

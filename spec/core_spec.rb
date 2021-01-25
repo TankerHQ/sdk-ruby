@@ -149,7 +149,9 @@ RSpec.describe Tanker do
       got_revoked_event = true
     end
 
-    tanker.revoke_device tanker.device_id
+    Gem::Deprecate.skip_during do
+      tanker.revoke_device tanker.device_id
+    end
     expect { tanker.encrypt_utf8 'What could possibly go wrong?' }.to(raise_error) do |e|
       expect(e).to be_a(Tanker::Error)
       expect(e).to be_a(Tanker::Error::DeviceRevoked)
