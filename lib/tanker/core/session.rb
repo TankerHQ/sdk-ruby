@@ -62,6 +62,8 @@ module Tanker
       CTanker.tanker_revoke_device(@ctanker, device_id).get
     end
 
+    deprecate :revoke_device, :none, 2021, 7
+
     def stop
       CTanker.tanker_stop(@ctanker).get
     end
