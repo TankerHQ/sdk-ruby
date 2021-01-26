@@ -5,6 +5,8 @@ require_relative 'status'
 
 module Tanker
   class Core
+    extend Gem::Deprecate
+
     def start(identity)
       CTanker.tanker_start(@ctanker, identity).get.address
     end
