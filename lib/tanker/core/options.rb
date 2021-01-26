@@ -13,20 +13,21 @@ module Tanker
            :sdk_type, :pointer,
            :sdk_version, :pointer
 
-    SDK_TYPE = CTanker.new_cstring 'client-ruby'
+    SDK_TYPE = 'client-ruby'
     SDK_VERSION = CTanker.new_cstring Core::VERSION
 
-    def initialize(app_id:, url: nil, writable_path: nil)
+    def initialize(app_id:, url: nil, sdk_type: SDK_TYPE, writable_path: nil)
       # Note: Instance variables are required to keep the CStrings alive
       @app_id = CTanker.new_cstring app_id
       @url = CTanker.new_cstring url
       @writable_path = CTanker.new_cstring writable_path
+      @sdk_type = CTanker.new_cstring sdk_type
 
       self[:version] = 2
       self[:app_id] = @app_id
       self[:url] = @url
       self[:writable_path] = @writable_path
-      self[:sdk_type] = SDK_TYPE
+      self[:sdk_type] = @sdk_type
       self[:sdk_version] = SDK_VERSION
     end
   end
