@@ -15,19 +15,19 @@ module Tanker
       CTanker.tanker_generate_verification_key(@ctanker).get_string
     end
 
-    def register_identity(verification)
+    def register_identity(verification, options = nil)
       cverif = CTanker::CVerification.new(verification)
-      CTanker.tanker_register_identity(@ctanker, cverif).get
+      CTanker.tanker_register_identity(@ctanker, cverif, options).get_maybe_string
     end
 
-    def verify_identity(verification)
+    def verify_identity(verification, options = nil)
       cverif = CTanker::CVerification.new(verification)
-      CTanker.tanker_verify_identity(@ctanker, cverif).get
+      CTanker.tanker_verify_identity(@ctanker, cverif, options).get_maybe_string
     end
 
-    def set_verification_method(verification) # rubocop:disable Naming/AccessorMethodName (this is not a setter)
+    def set_verification_method(verification, options = nil)
       cverif = CTanker::CVerification.new(verification)
-      CTanker.tanker_set_verification_method(@ctanker, cverif).get
+      CTanker.tanker_set_verification_method(@ctanker, cverif, options).get_maybe_string
     end
 
     def get_verification_methods # rubocop:disable Naming/AccessorMethodName
