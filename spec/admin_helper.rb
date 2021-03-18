@@ -106,6 +106,11 @@ module Tanker
                                                 oidc_client_provider: client_provider)
       @admin.app_update(@app.id, app_options)
     end
+
+    def toggle_session_certificates(enable)
+      app_options = Admin::AppUpdateOptions.new(session_certificates: enable)
+      @admin.app_update(@app.id, app_options)
+    end
   end
 end
 
