@@ -37,6 +37,17 @@ module Tanker
         CTanker.tanker_free_buffer str_ptr
         str
       end
+
+      def get_maybe_string # rubocop:disable Naming/AccessorMethodName (this is not a getter)
+        str_ptr = get
+        if str_ptr.null?
+          nil
+        else
+          str = str_ptr.get_string(0).force_encoding(Encoding::UTF_8)
+          CTanker.tanker_free_buffer str_ptr
+          str
+        end
+      end
     end
   end
 end

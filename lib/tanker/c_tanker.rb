@@ -4,6 +4,7 @@ require 'ffi'
 require_relative 'core/options'
 require_relative 'sharing_options'
 require_relative 'encryption_options'
+require_relative 'verification_options'
 require_relative 'c_tanker/c_lib'
 require_relative 'c_tanker/c_future'
 require_relative 'c_tanker/c_verification'
@@ -39,10 +40,13 @@ module Tanker
     blocking_attach_function :tanker_create, [Tanker::Core::Options], CFuture
     blocking_attach_function :tanker_destroy, [:session_pointer], CFuture
     blocking_attach_function :tanker_start, [:session_pointer, :string], CFuture
-    blocking_attach_function :tanker_register_identity, [:session_pointer, CVerification], CFuture
-    blocking_attach_function :tanker_verify_identity, [:session_pointer, CVerification], CFuture
+    blocking_attach_function :tanker_register_identity, [:session_pointer, CVerification,
+                                                         Tanker::VerificationOptions], CFuture
+    blocking_attach_function :tanker_verify_identity, [:session_pointer, CVerification,
+                                                       Tanker::VerificationOptions], CFuture
     blocking_attach_function :tanker_get_verification_methods, [:session_pointer], CFuture
-    blocking_attach_function :tanker_set_verification_method, [:session_pointer, CVerification], CFuture
+    blocking_attach_function :tanker_set_verification_method, [:session_pointer, CVerification,
+                                                               Tanker::VerificationOptions], CFuture
     blocking_attach_function :tanker_stop, [:session_pointer], CFuture
     blocking_attach_function :tanker_status, [:session_pointer], :uint32
     blocking_attach_function :tanker_generate_verification_key, [:session_pointer], CFuture

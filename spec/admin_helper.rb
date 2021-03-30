@@ -100,6 +100,17 @@ module Tanker
     def create_identity(user_id = SecureRandom.uuid)
       Identity.create_identity @app.id, @app.private_key, user_id
     end
+
+    def use_oidc_config(client_id, client_provider)
+      app_options = Admin::AppUpdateOptions.new(oidc_client_id: client_id,
+                                                oidc_client_provider: client_provider)
+      @admin.app_update(@app.id, app_options)
+    end
+
+    def toggle_session_certificates(enable)
+      app_options = Admin::AppUpdateOptions.new(session_certificates: enable)
+      @admin.app_update(@app.id, app_options)
+    end
   end
 end
 

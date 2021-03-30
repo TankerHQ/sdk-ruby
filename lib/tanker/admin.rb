@@ -3,6 +3,7 @@
 require 'ffi'
 require_relative 'admin/c_admin'
 require_relative 'admin/c_admin/c_app_descriptor'
+require_relative 'admin/c_admin/c_app_update_options'
 require_relative 'admin/app'
 
 module Tanker
@@ -41,9 +42,9 @@ module Tanker
       CAdmin.tanker_admin_delete_app(@cadmin, app_id).get
     end
 
-    def app_update(app_id, oidc_client_id, oidc_client_provider)
+    def app_update(app_id, app_update_options)
       assert_connected
-      CAdmin.tanker_admin_app_update(@cadmin, app_id, oidc_client_id, oidc_client_provider).get
+      CAdmin.tanker_admin_app_update(@cadmin, app_id, app_update_options).get
     end
 
     private

@@ -3,6 +3,7 @@
 require 'ffi'
 require 'tanker/c_tanker/c_future'
 require 'tanker/c_tanker/c_lib'
+require_relative 'c_admin/c_app_update_options'
 
 module Tanker
   class Admin
@@ -20,7 +21,8 @@ module Tanker
       attach_function :tanker_admin_delete_app, [:admin_pointer, :string], CTanker::CFuture
       attach_function :tanker_admin_destroy, [:admin_pointer], CTanker::CFuture
       attach_function :tanker_admin_app_descriptor_free, [:pointer], :void
-      attach_function :tanker_admin_app_update, [:admin_pointer, :string, :string, :string], CTanker::CFuture
+      attach_function :tanker_admin_app_update, [:admin_pointer, :string,
+                                                 Tanker::Admin::AppUpdateOptions], CTanker::CFuture
       attach_function :tanker_get_verification_code, [:string, :string, :string, :string], CTanker::CFuture
     end
 
