@@ -17,7 +17,9 @@ module Tanker
     SDK_VERSION = CTanker.new_cstring Core::VERSION
 
     def initialize(app_id:, url: nil, sdk_type: SDK_TYPE, writable_path: nil)
-      # Note: Instance variables are required to keep the CStrings alive
+      super()
+
+      # NOTE: Instance variables are required to keep the CStrings alive
       @app_id = CTanker.new_cstring app_id
       @url = CTanker.new_cstring url
       @writable_path = CTanker.new_cstring writable_path

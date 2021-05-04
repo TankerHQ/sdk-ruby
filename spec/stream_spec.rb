@@ -153,20 +153,20 @@ RSpec.describe "#{Tanker} streams" do
   end
 
   it 'throws the same errors as the inner stream' do
-    class MyError < RuntimeError; end
-
-    module ErrorOnRead
+    # NOTE: anonymous ephemeral error class and module
+    my_error_class = Class.new(RuntimeError)
+    my_error_on_read = Module.new do
       def read(*)
-        raise MyError
+        raise my_error_class
       end
     end
 
     plaintext = 'cat /dev/zero'
     in_stream = StringIO.new(plaintext)
-    in_stream.extend ErrorOnRead
+    in_stream.extend my_error_on_read
 
     encrypted_stream = @tanker.encrypt_stream in_stream
-    expect { encrypted_stream.read }.to raise_error(MyError)
+    expect { encrypted_stream.read }.to raise_error(my_error_class)
     encrypted_stream.close
   end
 

@@ -12,7 +12,9 @@ module Tanker
              :verification_code, :pointer
 
       def initialize(email, verification_code)
-        # Note: Instance variables are required to keep the CStrings alive
+        super()
+
+        # NOTE: Instance variables are required to keep the CStrings alive
         @email = CTanker.new_cstring email
         @verification_code = CTanker.new_cstring verification_code
 
@@ -36,11 +38,13 @@ module Tanker
       TYPE_OIDC_ID_TOKEN = 4
 
       def initialize(verification)
+        super()
+
         unless verification.is_a? Tanker::Verification
           raise TypeError, 'Verification argument is not a Tanker::Verification'
         end
 
-        # Note: Instance variables are required to keep the CStrings alive
+        # NOTE: Instance variables are required to keep the CStrings alive
         case verification
         when Tanker::EmailVerification
           self[:type] = TYPE_EMAIL

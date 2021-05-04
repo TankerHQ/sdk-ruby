@@ -31,7 +31,7 @@ module Tanker
       CTanker.tanker_init
 
       # Do not spam the console of our users.
-      self.class.set_log_handler { |_| } unless self.class.test_and_set_log_handler == 1
+      self.class.set_log_handler { |_| } unless self.class.test_and_set_log_handler == 1 # rubocop:disable Lint/EmptyBlock
 
       @revoke_event_handlers = Set.new
       @ctanker = CTanker.tanker_create(options).get

@@ -14,6 +14,10 @@ AllCops:
 Layout/LineLength:
   Max: 120
 
+# This is annoying for "enum" classes like Verification
+Layout/EmptyLineBetweenDefs:
+  Enabled: false
+
 Metrics/MethodLength:
   Max: 50
 
@@ -23,6 +27,10 @@ Style/ClassAndModuleChildren:
 # The %i[] syntax is not obvious to readers
 Style/SymbolArray:
   EnforcedStyle: brackets
+
+# One accessor per line is actually more readable sometimes
+Style/AccessorGrouping:
+  Enabled: false
 
 # The full documentation is on our website
 Style/Documentation:

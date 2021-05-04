@@ -7,7 +7,7 @@ module Tanker::CTanker
   # you can't just assign a string literal to a cstring.
   # They'd rather not handle allocations transparently (lifetimes are tricky),
   # so we have to take care of allocations and lifetimes ourselves.
-  def self.new_cstring(str_or_nil, manual = false)
+  def self.new_cstring(str_or_nil, manual = false) # rubocop:disable Style/OptionalBooleanParameter
     return nil if str_or_nil.nil?
 
     cstr = FFI::MemoryPointer.from_string(str_or_nil)
