@@ -13,7 +13,7 @@ module Tanker
       ffi_lib Tanker::CTanker.get_path('tanker_admin-c')
       typedef :pointer, :admin_pointer
 
-      # Note: We use those CFutures with the tanker_future_* functions exposed by CTanker,
+      # NOTE: We use those CFutures with the tanker_future_* functions exposed by CTanker,
       # this is safe because we only do simple synchronous blocking calls, without using tanker_future_then.
 
       attach_function :tanker_admin_connect, [:string, :string], CTanker::CFuture

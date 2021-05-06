@@ -55,11 +55,11 @@ def deploy(version: str) -> None:
 
     tankerci.bump.bump_files(version)
 
-    # Note: this commands also re-gerenates the lock as a side-effect since the
+    # NOTE: this commands also re-gerenates the lock as a side-effect since the
     # gemspec has changed - keep this before the git commands
     tankerci.run("bundle", "install")
 
-    # Note: `bundle exec rake build` does not like dirty git repos, so make a
+    # NOTE: `bundle exec rake build` does not like dirty git repos, so make a
     # commit with the new changes first
     tankerci.git.run(Path.cwd(), "add", "--update", ".")
     tankerci.git.run(Path.cwd(), "commit", "--message", f"Bump to {version}")

@@ -4,12 +4,14 @@ require 'ffi'
 require 'tanker/c_tanker/c_string'
 
 module Tanker
-  class Verification; end
+  class Verification; end # rubocop:disable Lint/EmptyClass
 
   class EmailVerification < Verification
     attr_reader :email, :verification_code
 
     def initialize(email, verif_code)
+      super()
+
       ASSERT_UTF8.call(email)
       ASSERT_UTF8.call(verif_code)
 
@@ -22,6 +24,8 @@ module Tanker
     attr_reader :passphrase
 
     def initialize(passphrase)
+      super()
+
       ASSERT_UTF8.call(passphrase)
 
       @passphrase = passphrase
@@ -32,6 +36,8 @@ module Tanker
     attr_reader :verification_key
 
     def initialize(verif_key)
+      super()
+
       ASSERT_UTF8.call(verif_key)
 
       @verification_key = verif_key
@@ -42,6 +48,8 @@ module Tanker
     attr_reader :oidc_id_token
 
     def initialize(oidc_id_token)
+      super()
+
       ASSERT_UTF8.call(oidc_id_token)
 
       @oidc_id_token = oidc_id_token

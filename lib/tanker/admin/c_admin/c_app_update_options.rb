@@ -7,6 +7,7 @@ module Tanker
   class Admin
     class AppUpdateOptions < FFI::Struct
       def initialize(oidc_client_id: nil, oidc_client_provider: nil, session_certificates: nil)
+        super()
         self[:version] = 1
         unless oidc_client_id.nil?
           @oidc_client_id = CTanker.new_cstring oidc_client_id

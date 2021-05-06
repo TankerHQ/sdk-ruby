@@ -7,6 +7,8 @@ module Tanker
   # Options that can be given when sharing data
   class SharingOptions < FFI::Struct
     def initialize(share_with_users: [], share_with_groups: [])
+      super()
+
       @users_objs = share_with_users.map { |id| CTanker.new_cstring id }
       users = FFI::MemoryPointer.new(:pointer, share_with_users.length)
       users.write_array_of_pointer(@users_objs)

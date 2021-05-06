@@ -39,7 +39,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler-audit', '~> 0.7'
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'rubocop', '~> 0.85.1'
+  spec.add_development_dependency 'rubocop', '~> 1.13'
   spec.add_development_dependency 'rubygems-tasks', '~> 0.2.5'
   spec.add_development_dependency 'tanker-identity', '~> 0.1'
 end
