@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'stringio'
 require_relative 'admin_helper'
 require 'tanker/core'
 require 'tanker/identity'
@@ -27,6 +28,14 @@ ensure
   without_warnings do
     Encoding.default_internal = old_internal_encoding
     Encoding.default_external = old_external_encoding
+  end
+end
+
+class BrokenStringIO < StringIO
+  class Error < RuntimeError; end
+
+  def read(*)
+    raise Error
   end
 end
 
@@ -153,20 +162,11 @@ RSpec.describe "#{Tanker} streams" do
   end
 
   it 'throws the same errors as the inner stream' do
-    # NOTE: anonymous ephemeral error class and module
-    my_error_class = Class.new(RuntimeError)
-    my_error_on_read = Module.new do
-      def read(*)
-        raise my_error_class
-      end
-    end
-
     plaintext = 'cat /dev/zero'
-    in_stream = StringIO.new(plaintext)
-    in_stream.extend my_error_on_read
+    in_stream = BrokenStringIO.new(plaintext)
 
     encrypted_stream = @tanker.encrypt_stream in_stream
-    expect { encrypted_stream.read }.to raise_error(my_error_class)
+    expect { encrypted_stream.read }.to raise_error(BrokenStringIO::Error)
     encrypted_stream.close
   end
 
