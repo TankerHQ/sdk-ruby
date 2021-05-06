@@ -1,22 +1,33 @@
 include:
   project: TankerHQ/gitlab-ci-files
-  ref: 37bb68d38359db981eaec61aa6918075ff29d4e0
+  ref: ce8eb50345627b5f889f6a74b8b7fde6d860b084
   file: /ruby.yml
 
-###############
-# check stage #
-###############
+##############
+# lint stage #
+##############
+
+# Prevent the pipeline from passing unless the lint job is started manually
+# There is no way to require _one of_ the manual checks job,
+# it's all blocking or nothing blocks the pipeline. So we require manual lint instead
 
 lint:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: false # Block!
   extends:
-    - .check
+    - .lint
     - .tags/linux
-    - .rules/mr/auto
     - .before-script/rbenv-path
   variables:
     RBENV_VERSION: 2.7.2
   script:
     - poetry run python run-ci.py lint
+
+###############
+# check stage #
+###############
 
 check/native-from-sources/linux/2.6:
   extends:
