@@ -29,6 +29,7 @@ module Tanker
     DEVICE_REVOKED = 12
     CONFLICT = 13
     UPGRADE_REQUIRED = 14
+    IDENTITY_ALREADY_ATTACHED = 15
 
     # Error subclasses
     class InvalidArgument < self; end
@@ -45,6 +46,7 @@ module Tanker
     class DeviceRevoked < self; end
     class Conflict < self; end
     class UpgradeRequired < self; end
+    class IdentityAlreadyAttached < self; end
 
     class << self
       ERROR_CODE_TO_CLASS = {
@@ -61,7 +63,8 @@ module Tanker
         IO_ERROR => IOError,
         DEVICE_REVOKED => DeviceRevoked,
         CONFLICT => Conflict,
-        UPGRADE_REQUIRED => UpgradeRequired
+        UPGRADE_REQUIRED => UpgradeRequired,
+        IDENTITY_ALREADY_ATTACHED => IdentityAlreadyAttached
       }.freeze
 
       private_constant :ERROR_CODE_TO_CLASS
