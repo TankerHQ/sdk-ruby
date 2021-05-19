@@ -250,4 +250,35 @@ RSpec.describe Tanker do
     expect(decrypted).to eq message
     bob.free
   end
+
+  it 'throws if attaching an already attached provisional identity' do
+    bob_email = 'bob@tanker.io'
+    bob_provisional_identity = Tanker::Identity.create_provisional_identity(@app.id, bob_email)
+
+    bob = Tanker::Core.new @options
+    bob_identity = @app.create_identity
+    bob.start_anonymous bob_identity
+
+    attach_result = bob.attach_provisional_identity bob_provisional_identity
+    expect(attach_result.status).to eq Tanker::Status::IDENTITY_VERIFICATION_NEEDED
+    expect(attach_result.verification_method).to eq Tanker::EmailVerificationMethod.new bob_email
+
+    verif_code = @app.get_verification_code bob_email
+    bob.verify_provisional_identity(Tanker::EmailVerification.new(bob_email, verif_code))
+
+    alice = Tanker::Core.new @options
+    alice_identity = @app.create_identity
+    alice.start_anonymous alice_identity
+
+    attach_result = alice.attach_provisional_identity bob_provisional_identity
+    expect(attach_result.status).to eq Tanker::Status::IDENTITY_VERIFICATION_NEEDED
+
+    verif_code2 = @app.get_verification_code bob_email
+    expect { alice.verify_provisional_identity(Tanker::EmailVerification.new(bob_email, verif_code2)) }
+      .to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::IdentityAlreadyAttached)
+      expect(e.code).to eq(Tanker::Error::IDENTITY_ALREADY_ATTACHED)
+    end
+  end
 end
