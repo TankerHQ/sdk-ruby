@@ -105,7 +105,7 @@ RSpec.describe "#{Tanker} Groups" do
 
     @alice.update_group_members group_id, users_to_remove: [@bob_pub_ident]
 
-    expect{ @bob.decrypt_utf8(encrypted) }.to(raise_error) do |e|
+    expect { @bob.decrypt_utf8(encrypted) }.to(raise_error) do |e|
       expect(e).to be_a(Tanker::Error)
       expect(e).to be_a(Tanker::Error::InvalidArgument)
       expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
@@ -116,11 +116,10 @@ RSpec.describe "#{Tanker} Groups" do
     members = [@alice_pub_ident, @bob_pub_ident]
     group_id = @alice.create_group members
 
-    expect{ @alice.update_group_members group_id }.to(raise_error) do |e|
+    expect { @alice.update_group_members group_id }.to(raise_error) do |e|
       expect(e).to be_a(Tanker::Error)
       expect(e).to be_a(Tanker::Error::InvalidArgument)
       expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
     end
-
   end
 end
