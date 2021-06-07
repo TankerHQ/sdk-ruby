@@ -23,7 +23,8 @@ module Tanker
       attach_function :tanker_admin_app_descriptor_free, [:pointer], :void
       attach_function :tanker_admin_app_update, [:admin_pointer, :string,
                                                  Tanker::Admin::AppUpdateOptions], CTanker::CFuture
-      attach_function :tanker_get_verification_code, [:string, :string, :string, :string], CTanker::CFuture
+      attach_function :tanker_get_email_verification_code, [:string, :string, :string, :string], CTanker::CFuture
+      attach_function :tanker_get_sms_verification_code, [:string, :string, :string, :string], CTanker::CFuture
     end
 
     private_constant :CAdmin

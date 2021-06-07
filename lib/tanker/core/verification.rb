@@ -55,4 +55,18 @@ module Tanker
       @oidc_id_token = oidc_id_token
     end
   end
+
+  class PhoneNumberVerification < Verification
+    attr_reader :phone_number, :verification_code
+
+    def initialize(phone_number, verif_code)
+      super()
+
+      ASSERT_UTF8.call(phone_number)
+      ASSERT_UTF8.call(verif_code)
+
+      @phone_number = phone_number
+      @verification_code = verif_code
+    end
+  end
 end
