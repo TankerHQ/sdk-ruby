@@ -36,7 +36,7 @@ RSpec.describe "#{Tanker} Verification" do
     tanker2.free
   end
 
-  it 'Can setup and use an unlock passphrase' do
+  it 'Can setup and use an verification passphrase' do
     pass = 'The Beauty In The Ordinary'
     pass_verif = Tanker::PassphraseVerification.new pass
 
@@ -52,7 +52,7 @@ RSpec.describe "#{Tanker} Verification" do
     tanker2.free
   end
 
-  it 'Can update an unlock passphrase' do
+  it 'Can update an verification passphrase' do
     first_verif = Tanker::PassphraseVerification.new '384633km'
     second_verif = Tanker::PassphraseVerification.new 'beaming ahead'
 
@@ -69,7 +69,7 @@ RSpec.describe "#{Tanker} Verification" do
     tanker2.free
   end
 
-  it 'can check that the password unlock method is set-up' do
+  it 'can check that the password verification method is set-up' do
     tanker = Tanker::Core.new @options
     tanker.start @identity
     tanker.register_identity Tanker::PassphraseVerification.new 'The Cost of Legacy'
@@ -78,9 +78,9 @@ RSpec.describe "#{Tanker} Verification" do
     expect(methods).to eq [Tanker::PassphraseVerificationMethod.new]
   end
 
-  it 'can check that the email unlock method is set-up' do
+  it 'can check that the email verification method is set-up' do
     email = 'mono@chromat.ic'
-    code = @app.get_verification_code email
+    code = @app.get_email_verification_code email
 
     tanker = Tanker::Core.new @options
     tanker.start @identity
@@ -90,9 +90,21 @@ RSpec.describe "#{Tanker} Verification" do
     expect(methods).to eq [Tanker::EmailVerificationMethod.new(email)]
   end
 
-  it 'can get the list of unlock methods that have been set-up' do
+  it 'can check that the SMS verification method is set-up' do
+    phone_number = '+33600001111';
+    code = @app.get_sms_verification_code phone_number
+
+    tanker = Tanker::Core.new @options
+    tanker.start @identity
+    tanker.register_identity Tanker::PhoneNumberVerification.new(phone_number, code)
+    methods = tanker.get_verification_methods
+    tanker.free
+    expect(methods).to eq [Tanker::PhoneNumberVerificationMethod.new(phone_number)]
+  end
+
+  it 'can get the list of verification methods that have been set-up' do
     email = 'selena@strand.ed'
-    code = @app.get_verification_code email
+    code = @app.get_email_verification_code email
 
     tanker = Tanker::Core.new @options
     tanker.start @identity
@@ -105,17 +117,32 @@ RSpec.describe "#{Tanker} Verification" do
     expect(methods.sort_by { |e| e.class.name }).to eq expected_methods
   end
 
-  it 'can unlock with a verification code' do
+  it 'can unlock with an email verification code' do
     email = 'mono@chromat.ic'
 
     tanker1 = Tanker::Core.new @options
     tanker1.start @identity
-    tanker1.register_identity Tanker::EmailVerification.new(email, @app.get_verification_code(email))
+    tanker1.register_identity Tanker::EmailVerification.new(email, @app.get_email_verification_code(email))
     tanker1.free
 
     tanker2 = Tanker::Core.new @options
     tanker2.start @identity
-    tanker2.verify_identity Tanker::EmailVerification.new(email, @app.get_verification_code(email))
+    tanker2.verify_identity Tanker::EmailVerification.new(email, @app.get_email_verification_code(email))
+    expect(tanker2.status).to eq(Tanker::Status::READY)
+    tanker2.free
+  end
+
+  it 'can unlock with an SMS verification code' do
+    phone_number = '+33600001111'
+
+    tanker1 = Tanker::Core.new @options
+    tanker1.start @identity
+    tanker1.register_identity Tanker::PhoneNumberVerification.new(phone_number, @app.get_sms_verification_code(phone_number))
+    tanker1.free
+
+    tanker2 = Tanker::Core.new @options
+    tanker2.start @identity
+    tanker2.verify_identity Tanker::PhoneNumberVerification.new(phone_number, @app.get_sms_verification_code(phone_number))
     expect(tanker2.status).to eq(Tanker::Status::READY)
     tanker2.free
   end

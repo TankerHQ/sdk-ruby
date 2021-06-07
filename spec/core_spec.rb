@@ -220,7 +220,7 @@ RSpec.describe Tanker do
     expect(attach_result.status).to eq Tanker::Status::IDENTITY_VERIFICATION_NEEDED
     expect(attach_result.verification_method).to eq Tanker::EmailVerificationMethod.new bob_email
 
-    verif_code = @app.get_verification_code bob_email
+    verif_code = @app.get_email_verification_code bob_email
     bob.verify_provisional_identity(Tanker::EmailVerification.new(bob_email, verif_code))
 
     decrypted = bob.decrypt_utf8 encrypted
@@ -242,7 +242,7 @@ RSpec.describe Tanker do
     alice.free
 
     bob.start bob_identity
-    verif_code = @app.get_verification_code bob_email
+    verif_code = @app.get_email_verification_code bob_email
     bob.register_identity(Tanker::EmailVerification.new(bob_email, verif_code))
     bob.attach_provisional_identity bob_provisional_identity
 
@@ -263,7 +263,7 @@ RSpec.describe Tanker do
     expect(attach_result.status).to eq Tanker::Status::IDENTITY_VERIFICATION_NEEDED
     expect(attach_result.verification_method).to eq Tanker::EmailVerificationMethod.new bob_email
 
-    verif_code = @app.get_verification_code bob_email
+    verif_code = @app.get_email_verification_code bob_email
     bob.verify_provisional_identity(Tanker::EmailVerification.new(bob_email, verif_code))
 
     alice = Tanker::Core.new @options
@@ -273,7 +273,7 @@ RSpec.describe Tanker do
     attach_result = alice.attach_provisional_identity bob_provisional_identity
     expect(attach_result.status).to eq Tanker::Status::IDENTITY_VERIFICATION_NEEDED
 
-    verif_code2 = @app.get_verification_code bob_email
+    verif_code2 = @app.get_email_verification_code bob_email
     expect { alice.verify_provisional_identity(Tanker::EmailVerification.new(bob_email, verif_code2)) }
       .to(raise_error) do |e|
       expect(e).to be_a(Tanker::Error)

@@ -25,4 +25,17 @@ module Tanker
       super && email == other.email
     end
   end
+
+  class PhoneNumberVerificationMethod < VerificationMethod
+    attr_reader :phone_number
+
+    def initialize(phone_number)
+      super()
+      @phone_number = phone_number
+    end
+
+    def ==(other)
+      super && phone_number == other.phone_number
+    end
+  end
 end
