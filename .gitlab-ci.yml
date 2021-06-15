@@ -21,7 +21,7 @@ lint:
     - .tags/linux
     - .before-script/rbenv-path
   variables:
-    RBENV_VERSION: 2.7.2
+    RBENV_VERSION: 2.7.3
   script:
     - poetry run python run-ci.py lint
 
@@ -35,7 +35,7 @@ check/native-from-sources/linux/2.6:
     - .tags/linux
     - .check/native-from-sources/linux
   variables:
-    RBENV_VERSION: 2.6.6
+    RBENV_VERSION: 2.6.7
 
 check/native-from-sources/linux/2.7:
   extends:
@@ -43,7 +43,7 @@ check/native-from-sources/linux/2.7:
     - .tags/linux
     - .check/native-from-sources/linux
   variables:
-    RBENV_VERSION: 2.7.2
+    RBENV_VERSION: 2.7.3
 
 check/deployed-native/linux/2.6:
   extends:
@@ -53,7 +53,7 @@ check/deployed-native/linux/2.6:
     - .rules/deployed-native/release-artifacts
     - .release-artifacts
   variables:
-    RBENV_VERSION: 2.6.6
+    RBENV_VERSION: 2.6.7
   script:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile linux-release-shared
 
@@ -65,7 +65,7 @@ check/deployed-native/linux/2.7:
     - .rules/deployed-native/release-artifacts
     - .release-artifacts
   variables:
-    RBENV_VERSION: 2.7.2
+    RBENV_VERSION: 2.7.3
   script:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile linux-release-shared
 
@@ -94,13 +94,13 @@ check/downstream/linux/2.6:
   extends:
     - .check/downstream/linux
   variables:
-    RBENV_VERSION: 2.6.6
+    RBENV_VERSION: 2.6.7
 
 check/downstream/linux/2.7:
   extends:
     - .check/downstream/linux
   variables:
-    RBENV_VERSION: 2.7.2
+    RBENV_VERSION: 2.7.3
 
 check/downstream/macos/2.7:
   extends:
@@ -126,7 +126,7 @@ deploy:
   script:
     - poetry run python run-ci.py deploy --version $SDK_RUBY_RELEASE_VERSION
   variables:
-    RBENV_VERSION: 2.6.6
+    RBENV_VERSION: 2.6.7
   release:
     description: sdk-ruby v$SDK_RUBY_RELEASE_VERSION
     tag_name: v$SDK_RUBY_RELEASE_VERSION
