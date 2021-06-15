@@ -45,6 +45,14 @@ check/native-from-sources/linux/2.7:
   variables:
     RBENV_VERSION: 2.7.3
 
+check/native-from-sources/linux/3.0:
+  extends:
+    - .check
+    - .tags/linux
+    - .check/native-from-sources/linux
+  variables:
+    RBENV_VERSION: 3.0.1
+
 check/deployed-native/linux/2.6:
   extends:
     - .check
@@ -66,6 +74,18 @@ check/deployed-native/linux/2.7:
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.7.3
+  script:
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile linux-release-shared
+
+check/deployed-native/linux/3.0:
+  extends:
+    - .check
+    - .tags/linux
+    - .before-script/rbenv-path
+    - .rules/deployed-native/release-artifacts
+    - .release-artifacts
+  variables:
+    RBENV_VERSION: 3.0.1
   script:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile linux-release-shared
 
@@ -101,6 +121,12 @@ check/downstream/linux/2.7:
     - .check/downstream/linux
   variables:
     RBENV_VERSION: 2.7.3
+
+check/downstream/linux/3.0:
+  extends:
+    - .check/downstream/linux
+  variables:
+    RBENV_VERSION: 3.0.1
 
 check/downstream/macos/2.7:
   extends:
