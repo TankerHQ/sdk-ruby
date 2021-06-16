@@ -1,6 +1,6 @@
 include:
   project: TankerHQ/gitlab-ci-files
-  ref: ce8eb50345627b5f889f6a74b8b7fde6d860b084
+  ref: ecfaa4031b36380595405ca7078f73daf08c6b1b
   file: /ruby.yml
 
 ##############
