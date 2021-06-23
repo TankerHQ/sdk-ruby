@@ -115,7 +115,6 @@ def main() -> None:
     deploy_parser = subparsers.add_parser("deploy")
     deploy_parser.add_argument("--version", required=True)
     subparsers.add_parser("lint")
-    subparsers.add_parser("mirror")
 
     args = parser.parse_args()
     command = args.command
@@ -155,8 +154,6 @@ def main() -> None:
             pipeline_id=args.pipeline_id,
             job_name=args.job_name,
         )
-    elif args.command == "mirror":
-        tankerci.git.mirror(github_url="git@github.com:TankerHQ/sdk-ruby")
     else:
         parser.print_help()
         sys.exit(1)
