@@ -1,6 +1,6 @@
 include:
   project: TankerHQ/gitlab-ci-files
-  ref: 874483a45e99037b888688c0c3d0fb6a186da6b0
+  ref: 47cc39cae5dfb9dab4b8506286626859c09a1a4b
   file: /ruby.yml
 
 ##############
@@ -156,11 +156,3 @@ deploy:
   release:
     description: sdk-ruby v$SDK_RUBY_RELEASE_VERSION
     tag_name: v$SDK_RUBY_RELEASE_VERSION
-
-mirror:
-  extends:
-    - .deploy
-    - .tags/linux
-    - .rules/mirror
-  script:
-    - poetry run python run-ci.py mirror
