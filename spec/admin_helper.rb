@@ -89,8 +89,12 @@ module Tanker
       @app.id
     end
 
-    def get_verification_code(email)
-      @app.get_verification_code(email)
+    def get_email_verification_code(email)
+      @app.get_email_verification_code(email)
+    end
+
+    def get_sms_verification_code(phone_number)
+      @app.get_sms_verification_code(phone_number)
     end
 
     def delete

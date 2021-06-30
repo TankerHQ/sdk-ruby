@@ -11,8 +11,12 @@ module Tanker
              :private_key, :string,
              :public_key, :string
 
-      def get_verification_code(email)
-        CTanker.tanker_get_verification_code(email).get
+      def get_email_verification_code(email)
+        CTanker.tanker_get_email_verification_code(email).get
+      end
+
+      def get_sms_verification_code(phone_number)
+        CTanker.tanker_get_sms_verification_code(phone_number).get
       end
 
       def self.release(ptr)

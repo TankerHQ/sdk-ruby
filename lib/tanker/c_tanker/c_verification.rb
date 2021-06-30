@@ -24,18 +24,38 @@ module Tanker
       end
     end
 
+    class CPhoneNumberVerification < FFI::Struct
+      layout :version, :uint8,
+             :phone_number, :pointer,
+             :verification_code, :pointer
+
+      def initialize(phone_number, verification_code)
+        super()
+
+        # NOTE: Instance variables are required to keep the CStrings alive
+        @phone_number = CTanker.new_cstring phone_number
+        @verification_code = CTanker.new_cstring verification_code
+
+        self[:version] = 1
+        self[:phone_number] = @phone_number
+        self[:verification_code] = @verification_code
+      end
+    end
+
     class CVerification < FFI::Struct
       layout :version, :uint8,
              :type, :uint8,
              :verification_key, :pointer,
              :email_verification, CEmailVerification,
              :passphrase, :pointer,
-             :oidc_id_token, :pointer
+             :oidc_id_token, :pointer,
+             :phone_number_verification, CPhoneNumberVerification
 
       TYPE_EMAIL = 1
       TYPE_PASSPHRASE = 2
       TYPE_VERIFICATION_KEY = 3
       TYPE_OIDC_ID_TOKEN = 4
+      TYPE_PHONE_NUMBER = 5
 
       def initialize(verification)
         super()
@@ -61,11 +81,15 @@ module Tanker
           @oidc_id_token = CTanker.new_cstring verification.oidc_id_token
           self[:type] = TYPE_OIDC_ID_TOKEN
           self[:oidc_id_token] = @oidc_id_token
+        when Tanker::PhoneNumberVerification
+          self[:type] = TYPE_PHONE_NUMBER
+          self[:phone_number_verification] =
+            CPhoneNumberVerification.new verification.phone_number, verification.verification_code
         else
           raise ArgumentError, 'Unknown Tanker::Verification type!'
         end
 
-        self[:version] = 3
+        self[:version] = 4
       end
     end
   end
