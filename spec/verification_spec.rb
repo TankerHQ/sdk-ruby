@@ -91,7 +91,7 @@ RSpec.describe "#{Tanker} Verification" do
   end
 
   it 'can check that the SMS verification method is set-up' do
-    phone_number = '+33600001111'
+    phone_number = '+33639982233'
     code = @app.get_sms_verification_code phone_number
 
     tanker = Tanker::Core.new @options
@@ -133,7 +133,7 @@ RSpec.describe "#{Tanker} Verification" do
   end
 
   it 'can unlock with an SMS verification code' do
-    phone_number = '+33600001111'
+    phone_number = '+33639982233'
 
     tanker1 = Tanker::Core.new @options
     tanker1.start @identity
