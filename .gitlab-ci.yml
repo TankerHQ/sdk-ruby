@@ -1,6 +1,6 @@
 include:
   project: TankerHQ/gitlab-ci-files
-  ref: 47cc39cae5dfb9dab4b8506286626859c09a1a4b
+  ref: a247a7f1fd9d33f89f95cce4f7c0105b1cc5d6b0
   file: /ruby.yml
 
 ##############
@@ -150,6 +150,7 @@ deploy:
     - .rules/deploy/ruby
     - .before-script/rbenv-path
   script:
+    - poetry run python run-ci.py reset-branch $UPSTREAM_BRANCH_NAME
     - poetry run python run-ci.py deploy --version $SDK_RUBY_RELEASE_VERSION
   variables:
     RBENV_VERSION: 2.6.7
