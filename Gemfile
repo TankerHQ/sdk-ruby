@@ -4,4 +4,4 @@ source 'https://rubygems.org'
 
 gemspec
 
-gem 'tanker-identity', git: 'https://github.com/TankerHQ/identity-ruby', ref: 'master'
+gem 'tanker-identity', '2.16.0'
