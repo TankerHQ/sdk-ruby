@@ -74,7 +74,7 @@ module Tanker
 
     blocking_attach_function :tanker_create_group, [:session_pointer, :pointer, :uint64], CFuture
     blocking_attach_function :tanker_update_group_members, [:session_pointer, :string,
-                                                            :pointer, :uint64], CFuture
+                                                            :pointer, :uint64, :pointer, :uint64], CFuture
 
     blocking_attach_function :tanker_encryption_session_open, [:session_pointer, Tanker::EncryptionOptions], CFuture
     blocking_attach_function :tanker_encryption_session_close, [:enc_sess_pointer], CFuture
