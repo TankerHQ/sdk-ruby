@@ -1,6 +1,6 @@
 include:
   project: TankerHQ/gitlab-ci-files
-  ref: 2021-07-07-1
+  ref: 2021-10-04-177
   file: /ruby.yml
 
 ##############
@@ -53,12 +53,18 @@ check/native-from-sources/linux/3.0:
   variables:
     RBENV_VERSION: 3.0.1
 
+.rules/check/deployed-native:
+  rules:
+    - !reference [.rules/web/auto, rules]
+    - !reference [.rules/mr/manual, rules]
+    - !reference [.rules/deploy-pipeline, rules]
+
 check/deployed-native/linux/2.6:
   extends:
     - .check
     - .tags/linux
     - .before-script/rbenv-path
-    - .rules/deployed-native/release-artifacts
+    - .rules/check/deployed-native
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.6.7
@@ -70,7 +76,7 @@ check/deployed-native/linux/2.7:
     - .check
     - .tags/linux
     - .before-script/rbenv-path
-    - .rules/deployed-native/release-artifacts
+    - .rules/check/deployed-native
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.7.3
@@ -82,7 +88,7 @@ check/deployed-native/linux/3.0:
     - .check
     - .tags/linux
     - .before-script/rbenv-path
-    - .rules/deployed-native/release-artifacts
+    - .rules/check/deployed-native
     - .release-artifacts
   variables:
     RBENV_VERSION: 3.0.1
@@ -103,7 +109,7 @@ check/deployed-native/macos/x86_64/2.7:
   extends:
     - .check
     - .tags/macos/x86_64
-    - .rules/deployed-native/release-artifacts
+    - .rules/check/deployed-native
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.7.1
@@ -124,7 +130,7 @@ check/deployed-native/macos/arm/2.7:
   extends:
     - .check
     - .tags/macos/arm
-    - .rules/deployed-native/release-artifacts
+    - .rules/check/deployed-native
     - .release-artifacts
   variables:
     RBENV_VERSION: 2.7.3
