@@ -1,7 +1,99 @@
 include:
   project: TankerHQ/gitlab-ci-files
   ref: 2021-10-04-177
-  file: /ruby.yml
+  file: /native.yml
+
+############
+# Workflow #
+############
+
+workflow:
+  rules:
+    # web pipelines for releases only
+    - if: $CI_PIPELINE_SOURCE == "web" && $SDK_RUBY_RELEASE_VERSION !~ /\A\d+\.\d+\.\d+(\.(alpha|beta)\.\d+)?\z/
+      when: never
+    - if: !reference [.if-invalid-native-conan-reference, if]
+      when: never
+    # allow everything else
+    - when: always
+
+###########
+# Default #
+###########
+
+default:
+  before_script:
+    - poetry run python -m pip install --upgrade pip
+    - poetry install
+  image: registry.gitlab.com/tankerhq/docker/sdk-ruby:latest
+
+##########
+# Stages #
+##########
+
+stages:
+  - lint
+  - check
+  - deploy
+
+#############################
+# Default settings override #
+#############################
+
+.before-script/download-artifacts:
+  before_script:
+    - poetry run python -m pip install --upgrade pip
+    - poetry install
+    - poetry run python run-ci.py download-artifacts --project-id=$UPSTREAM_PROJECT_ID --pipeline-id=$UPSTREAM_PIPELINE_ID --job-name=$UPSTREAM_JOB_NAME
+    - poetry run python run-ci.py reset-branch $(cat branch_name.txt)
+    - poetry run python -m pip install --upgrade pip
+    - poetry install
+
+.before-script/rbenv-path:
+  before_script:
+    - poetry run python -m pip install --upgrade pip
+    - poetry install
+    - poetry run python run-ci.py reset-branch $UPSTREAM_BRANCH_NAME
+    - poetry run python -m pip install --upgrade pip
+    - poetry install
+    - export PATH=$HOME/.rbenv/versions/$RBENV_VERSION/bin:$PATH
+
+.before-script/rbenv-path-download-artifacts:
+  before_script:
+    - poetry run python -m pip install --upgrade pip
+    - poetry install
+    - poetry run python run-ci.py download-artifacts --project-id=$UPSTREAM_PROJECT_ID --pipeline-id=$UPSTREAM_PIPELINE_ID --job-name=$UPSTREAM_JOB_NAME
+    - poetry run python run-ci.py reset-branch $(cat branch_name.txt)
+    - poetry run python -m pip install --upgrade pip
+    - poetry install
+    - export PATH=$HOME/.rbenv/versions/$RBENV_VERSION/bin:$PATH
+
+#################
+# Extend blocks #
+#################
+
+.release-artifacts:
+  artifacts:
+    paths:
+      - vendor/tanker
+
+.check/native-from-sources/linux:
+  stage: check
+  extends:
+    - .tags/linux
+    - .rules/native-from-sources
+    - .before-script/rbenv-path
+  script:
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile linux-release-shared
+
+.check/downstream/linux:
+  stage: check
+  extends:
+    - .tags/linux
+    - .rules/check/downstream/linux
+    - .before-script/rbenv-path-download-artifacts
+  script:
+    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=upstream --profile linux-release-shared
 
 ##############
 # lint stage #
@@ -16,8 +108,8 @@ lint:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
       allow_failure: false # Block!
+  stage: lint
   extends:
-    - .lint
     - .tags/linux
     - .before-script/rbenv-path
   variables:
@@ -30,24 +122,24 @@ lint:
 ###############
 
 check/native-from-sources/linux/2.6:
+  stage: check
   extends:
-    - .check
     - .tags/linux
     - .check/native-from-sources/linux
   variables:
     RBENV_VERSION: 2.6.7
 
 check/native-from-sources/linux/2.7:
+  stage: check
   extends:
-    - .check
     - .tags/linux
     - .check/native-from-sources/linux
   variables:
     RBENV_VERSION: 2.7.3
 
 check/native-from-sources/linux/3.0:
+  stage: check
   extends:
-    - .check
     - .tags/linux
     - .check/native-from-sources/linux
   variables:
@@ -60,8 +152,8 @@ check/native-from-sources/linux/3.0:
     - !reference [.rules/deploy-pipeline, rules]
 
 check/deployed-native/linux/2.6:
+  stage: check
   extends:
-    - .check
     - .tags/linux
     - .before-script/rbenv-path
     - .rules/check/deployed-native
@@ -72,8 +164,8 @@ check/deployed-native/linux/2.6:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile linux-release-shared
 
 check/deployed-native/linux/2.7:
+  stage: check
   extends:
-    - .check
     - .tags/linux
     - .before-script/rbenv-path
     - .rules/check/deployed-native
@@ -84,8 +176,8 @@ check/deployed-native/linux/2.7:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile linux-release-shared
 
 check/deployed-native/linux/3.0:
+  stage: check
   extends:
-    - .check
     - .tags/linux
     - .before-script/rbenv-path
     - .rules/check/deployed-native
@@ -96,8 +188,8 @@ check/deployed-native/linux/3.0:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile linux-release-shared
 
 check/native-from-sources/macos/x86_64/2.7:
+  stage: check
   extends:
-    - .check
     - .tags/macos/x86_64
     - .rules/native-from-sources
   variables:
@@ -106,8 +198,8 @@ check/native-from-sources/macos/x86_64/2.7:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile macos-x86_64-release-shared
 
 check/deployed-native/macos/x86_64/2.7:
+  stage: check
   extends:
-    - .check
     - .tags/macos/x86_64
     - .rules/check/deployed-native
     - .release-artifacts
@@ -117,8 +209,8 @@ check/deployed-native/macos/x86_64/2.7:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile macos-x86_64-release-shared
 
 check/native-from-sources/macos/arm/2.7:
+  stage: check
   extends:
-    - .check
     - .tags/macos/arm
     - .rules/native-from-sources
   variables:
@@ -127,8 +219,8 @@ check/native-from-sources/macos/arm/2.7:
     - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile macos-armv8-release-shared
 
 check/deployed-native/macos/arm/2.7:
+  stage: check
   extends:
-    - .check
     - .tags/macos/arm
     - .rules/check/deployed-native
     - .release-artifacts
@@ -156,8 +248,8 @@ check/downstream/linux/3.0:
     RBENV_VERSION: 3.0.1
 
 check/downstream/macos/x86_64/2.7:
+  stage: check
   extends:
-    - .check
     - .tags/macos/x86_64
     - .rules/check/downstream/macos/x86_64
     - .before-script/download-artifacts
@@ -167,8 +259,8 @@ check/downstream/macos/x86_64/2.7:
     RBENV_VERSION: 2.7.1
 
 check/downstream/macos/arm/2.7:
+  stage: check
   extends:
-    - .check
     - .tags/macos/arm
     - .rules/check/downstream/macos/arm
     - .before-script/download-artifacts
@@ -182,8 +274,8 @@ check/downstream/macos/arm/2.7:
 ################
 
 deploy:
+  stage: deploy
   extends:
-    - .deploy
     - .tags/linux
     - .rules/deploy/ruby
     - .before-script/rbenv-path
