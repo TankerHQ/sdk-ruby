@@ -1,7 +1,7 @@
 include:
   project: TankerHQ/gitlab-ci-files
-  ref: 2021-10-04-177
-  file: /native.yml
+  ref: 2021-10-13-215
+  file: /common.yml
 
 ############
 # Workflow #
@@ -33,6 +33,7 @@ default:
 
 stages:
   - lint
+  - build-native
   - check
   - deploy
 
@@ -84,7 +85,8 @@ stages:
     - .rules/native-from-sources
     - .before-script/rbenv-path
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile linux-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=same-as-branch --profile linux-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build --test
 
 .check/downstream/linux:
   stage: check
@@ -93,7 +95,7 @@ stages:
     - .rules/check/downstream/linux
     - .before-script/rbenv-path-download-artifacts
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=upstream --profile linux-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build --test
 
 ##############
 # lint stage #
@@ -117,6 +119,75 @@ lint:
   script:
     - poetry run python run-ci.py lint
 
+######################
+# build-native stage #
+######################
+
+.rules/build-native:
+  rules:
+    - !reference [.rules/web/auto, rules]
+    - !reference [.rules/mr/manual, rules]
+    - !reference [.rules/deploy-pipeline, rules]
+
+build-native/linux/2.6:
+  stage: build-native
+  extends:
+    - .tags/linux
+    - .before-script/rbenv-path
+    - .rules/build-native
+    - .release-artifacts
+  variables:
+    RBENV_VERSION: 2.6.7
+  script:
+    - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile linux-release-shared
+
+build-native/linux/2.7:
+  stage: build-native
+  extends:
+    - .tags/linux
+    - .before-script/rbenv-path
+    - .rules/build-native
+    - .release-artifacts
+  variables:
+    RBENV_VERSION: 2.7.3
+  script:
+    - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile linux-release-shared
+
+build-native/linux/3.0:
+  stage: build-native
+  extends:
+    - .tags/linux
+    - .before-script/rbenv-path
+    - .rules/build-native
+    - .release-artifacts
+  variables:
+    RBENV_VERSION: 3.0.1
+  script:
+    - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile linux-release-shared
+
+build-native/macos/x86_64/2.7:
+  stage: build-native
+  extends:
+    - .tags/macos/x86_64
+    - .rules/build-native
+    - .release-artifacts
+  variables:
+    RBENV_VERSION: 2.7.1
+  script:
+    - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile macos-x86_64-release-shared
+
+build-native/macos/arm/2.7:
+  stage: build-native
+  extends:
+    - .tags/macos/arm
+    - .rules/build-native
+    - .release-artifacts
+  variables:
+    RBENV_VERSION: 2.7.3
+  script:
+    - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile macos-armv8-release-shared
+
+
 ###############
 # check stage #
 ###############
@@ -126,6 +197,7 @@ check/native-from-sources/linux/2.6:
   extends:
     - .tags/linux
     - .check/native-from-sources/linux
+  dependencies: []
   variables:
     RBENV_VERSION: 2.6.7
 
@@ -134,6 +206,7 @@ check/native-from-sources/linux/2.7:
   extends:
     - .tags/linux
     - .check/native-from-sources/linux
+  dependencies: []
   variables:
     RBENV_VERSION: 2.7.3
 
@@ -142,14 +215,36 @@ check/native-from-sources/linux/3.0:
   extends:
     - .tags/linux
     - .check/native-from-sources/linux
+  dependencies: []
   variables:
     RBENV_VERSION: 3.0.1
 
+check/native-from-sources/macos/x86_64/2.7:
+  stage: check
+  extends:
+    - .tags/macos/x86_64
+    - .rules/native-from-sources
+  dependencies: []
+  variables:
+    RBENV_VERSION: 2.7.1
+  script:
+    - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile macos-x86_64-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build --test
+
+check/native-from-sources/macos/arm/2.7:
+  stage: check
+  extends:
+    - .tags/macos/arm
+    - .rules/native-from-sources
+  dependencies: []
+  variables:
+    RBENV_VERSION: 2.7.3
+  script:
+    - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile macos-armv8-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build --test
+
 .rules/check/deployed-native:
-  rules:
-    - !reference [.rules/web/auto, rules]
-    - !reference [.rules/mr/manual, rules]
-    - !reference [.rules/deploy-pipeline, rules]
+  rules: !reference [.rules/build-native, rules]
 
 check/deployed-native/linux/2.6:
   stage: check
@@ -157,11 +252,12 @@ check/deployed-native/linux/2.6:
     - .tags/linux
     - .before-script/rbenv-path
     - .rules/check/deployed-native
-    - .release-artifacts
   variables:
     RBENV_VERSION: 2.6.7
+  needs:
+    - build-native/linux/2.6
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile linux-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build --test
 
 check/deployed-native/linux/2.7:
   stage: check
@@ -169,11 +265,12 @@ check/deployed-native/linux/2.7:
     - .tags/linux
     - .before-script/rbenv-path
     - .rules/check/deployed-native
-    - .release-artifacts
   variables:
     RBENV_VERSION: 2.7.3
+  needs:
+    - build-native/linux/2.7
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile linux-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build --test
 
 check/deployed-native/linux/3.0:
   stage: check
@@ -181,53 +278,36 @@ check/deployed-native/linux/3.0:
     - .tags/linux
     - .before-script/rbenv-path
     - .rules/check/deployed-native
-    - .release-artifacts
   variables:
     RBENV_VERSION: 3.0.1
+  needs:
+    - build-native/linux/3.0
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile linux-release-shared
-
-check/native-from-sources/macos/x86_64/2.7:
-  stage: check
-  extends:
-    - .tags/macos/x86_64
-    - .rules/native-from-sources
-  variables:
-    RBENV_VERSION: 2.7.1
-  script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile macos-x86_64-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build --test
 
 check/deployed-native/macos/x86_64/2.7:
   stage: check
   extends:
     - .tags/macos/x86_64
     - .rules/check/deployed-native
-    - .release-artifacts
   variables:
     RBENV_VERSION: 2.7.1
+  needs:
+    - build-native/macos/x86_64/2.7
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile macos-x86_64-release-shared
-
-check/native-from-sources/macos/arm/2.7:
-  stage: check
-  extends:
-    - .tags/macos/arm
-    - .rules/native-from-sources
-  variables:
-    RBENV_VERSION: 2.7.3
-  script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=same-as-branch --profile macos-armv8-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build --test
 
 check/deployed-native/macos/arm/2.7:
   stage: check
   extends:
     - .tags/macos/arm
     - .rules/check/deployed-native
-    - .release-artifacts
   variables:
     RBENV_VERSION: 2.7.3
+  needs:
+    - build-native/macos/arm/2.7
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE --profile macos-armv8-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build --test
 
 check/downstream/linux/2.6:
   extends:
@@ -254,7 +334,7 @@ check/downstream/macos/x86_64/2.7:
     - .rules/check/downstream/macos/x86_64
     - .before-script/download-artifacts
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=upstream --profile macos-x86_64-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build --test
   variables:
     RBENV_VERSION: 2.7.1
 
@@ -265,7 +345,7 @@ check/downstream/macos/arm/2.7:
     - .rules/check/downstream/macos/arm
     - .before-script/download-artifacts
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build-and-test --use-tanker=upstream --profile macos-armv8-release-shared
+    - poetry run python run-ci.py --isolate-conan-user-home build --test
   variables:
     RBENV_VERSION: 2.7.3
 
@@ -282,6 +362,12 @@ deploy:
   script:
     - poetry run python run-ci.py reset-branch $UPSTREAM_BRANCH_NAME
     - poetry run python run-ci.py deploy --version $SDK_RUBY_RELEASE_VERSION
+  needs:
+    - build-native/linux/3.0
+    - build-native/linux/2.7
+    - build-native/linux/2.6
+    - build-native/macos/x86_64/2.7
+    - build-native/macos/arm/2.7
   variables:
     RBENV_VERSION: 2.6.7
   release:
