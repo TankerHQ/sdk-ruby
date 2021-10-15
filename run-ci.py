@@ -28,14 +28,14 @@ def prepare(
         profiles=[profile],
         tanker_deployed_ref=tanker_deployed_ref,
     )
-
-
-def build_and_test(
-    tanker_source: TankerSource, profile: str, tanker_ref: Optional[str]
-) -> None:
-    prepare(tanker_source, profile, False, tanker_ref)
     tankerci.run("bundle", "install")
-    tankerci.run("bundle", "exec", "rake", "spec")
+    tankerci.run("bundle", "exec", "rake", "tanker_libs")
+
+
+def build(test: bool):
+    tankerci.run("bundle", "install")
+    if test:
+        tankerci.run("bundle", "exec", "rake", "spec")
 
 
 def lint() -> None:
@@ -79,15 +79,8 @@ def main() -> None:
 
     subparsers = parser.add_subparsers(title="subcommands", dest="command")
 
-    build_and_test_parser = subparsers.add_parser("build-and-test")
-    build_and_test_parser.add_argument(
-        "--use-tanker",
-        type=TankerSource,
-        default=TankerSource.EDITABLE,
-        dest="tanker_source",
-    )
-    build_and_test_parser.add_argument("--profile", default="default")
-    build_and_test_parser.add_argument("--tanker-ref")
+    build_parser = subparsers.add_parser("build")
+    build_parser.add_argument("--test", action="store_true")
 
     prepare_parser = subparsers.add_parser("prepare")
     prepare_parser.add_argument(
@@ -123,15 +116,15 @@ def main() -> None:
     if args.home_isolation:
         tankerci.conan.set_home_isolation()
         tankerci.conan.update_config()
-        if command == "build-and-test":
+        if command == "prepare":
             # Because of GitLab issue https://gitlab.com/gitlab-org/gitlab/-/issues/254323
             # the downstream deploy jobs will be triggered even if upstream has failed
             # By removing the cache we ensure that we do not use a
             # previously built (and potentially broken) release candidate to deploy a binding
             tankerci.conan.run("remove", "tanker/*", "--force")
 
-    if command == "build-and-test":
-        build_and_test(args.tanker_source, args.profile, args.tanker_ref)
+    if command == "build":
+        build(args.test)
     elif command == "prepare":
         prepare(
             args.tanker_source,
