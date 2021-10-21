@@ -105,9 +105,8 @@ stages:
 
 lint:
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: manual
-      allow_failure: false # Block!
+    - !reference [.rules/mr/auto, rules]
+    - !reference [.rules/push-master, rules]
   stage: lint
   extends:
     - .tags/linux
