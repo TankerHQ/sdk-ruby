@@ -271,7 +271,9 @@ check/deployed-native/macos/arm/2.7:
   stage: check
   extends:
     - .before-script/rbenv-path-download-artifacts
+  dependencies: []
   script:
+    - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=upstream $TANKER_PROFILES
     - poetry run python run-ci.py --isolate-conan-user-home build --test
 
 check/downstream/linux/2.6:
