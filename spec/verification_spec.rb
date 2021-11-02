@@ -189,6 +189,130 @@ RSpec.describe "#{Tanker} Verification" do
     expect(methods).to eq [Tanker::OIDCIDTokenVerificationMethod.new]
   end
 
+  describe 'preverified methods' do
+    before(:all) { @app.toggle_preverified_verification true }
+    after(:all) { @app.toggle_preverified_verification false }
+
+    it 'fails to register with preverified email' do
+      email = 'mono@chromat.ic'
+
+      tanker = Tanker::Core.new @options
+      tanker.start @identity
+
+      expect { tanker.register_identity Tanker::PreverifiedEmailVerification.new(email) }.to(raise_error) do |e|
+        expect(e).to be_a(Tanker::Error)
+        expect(e).to be_a(Tanker::Error::InvalidArgument)
+        expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+      end
+
+      tanker.free
+    end
+
+    it 'fails to register with preverified phone number' do
+      phone_number = '+33639982233'
+
+      tanker = Tanker::Core.new @options
+      tanker.start @identity
+
+      expect { tanker.register_identity Tanker::PreverifiedPhoneNumberVerification.new(phone_number) }
+        .to(raise_error) do |e|
+        expect(e).to be_a(Tanker::Error)
+        expect(e).to be_a(Tanker::Error::InvalidArgument)
+        expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+      end
+
+      tanker.free
+    end
+
+    it 'fails to verify with preverified email' do
+      email = 'mono@chromat.ic'
+
+      tanker1 = Tanker::Core.new @options
+      tanker1.start @identity
+      tanker1.register_identity Tanker::EmailVerification.new(email, @app.get_email_verification_code(email))
+      tanker1.free
+
+      tanker2 = Tanker::Core.new @options
+      tanker2.start @identity
+
+      expect { tanker2.verify_identity Tanker::PreverifiedEmailVerification.new(email) }.to(raise_error) do |e|
+        expect(e).to be_a(Tanker::Error)
+        expect(e).to be_a(Tanker::Error::InvalidArgument)
+        expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+      end
+
+      tanker2.free
+    end
+
+    it 'fails to verify with preverified phone number' do
+      phone_number = '+33639982233'
+
+      tanker1 = Tanker::Core.new @options
+      tanker1.start @identity
+      tanker1.register_identity(
+        Tanker::PhoneNumberVerification.new(phone_number, @app.get_sms_verification_code(phone_number))
+      )
+      tanker1.free
+
+      tanker2 = Tanker::Core.new @options
+      tanker2.start @identity
+
+      expect { tanker2.verify_identity Tanker::PreverifiedPhoneNumberVerification.new(phone_number) }
+        .to(raise_error) do |e|
+        expect(e).to be_a(Tanker::Error)
+        expect(e).to be_a(Tanker::Error::InvalidArgument)
+        expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+      end
+
+      tanker2.free
+    end
+
+    it 'sets verification method with preverified email' do
+      email = 'mono@chromat.ic'
+
+      tanker1 = Tanker::Core.new @options
+      tanker1.start @identity
+      tanker1.register_identity Tanker::PassphraseVerification.new 'The truth does not exist'
+      tanker1.set_verification_method Tanker::PreverifiedEmailVerification.new(email)
+      methods = tanker1.get_verification_methods
+      tanker1.free
+      expect(methods).to eq [Tanker::PreverifiedEmailVerificationMethod.new(email),
+                             Tanker::PassphraseVerificationMethod.new]
+
+      tanker2 = Tanker::Core.new @options
+      tanker2.start @identity
+      tanker2.verify_identity Tanker::EmailVerification.new(email, @app.get_email_verification_code(email))
+      expect(tanker2.status).to eq(Tanker::Status::READY)
+      methods = tanker2.get_verification_methods
+      tanker2.free
+      expect(methods).to eq [Tanker::EmailVerificationMethod.new(email), Tanker::PassphraseVerificationMethod.new]
+    end
+
+    it 'sets verification method with preverified phone number' do
+      phone_number = '+33639982233'
+
+      tanker1 = Tanker::Core.new @options
+      tanker1.start @identity
+      tanker1.register_identity Tanker::PassphraseVerification.new 'Ruby is the best language'
+      tanker1.set_verification_method Tanker::PreverifiedPhoneNumberVerification.new(phone_number)
+      methods = tanker1.get_verification_methods
+      tanker1.free
+      expect(methods).to eq [Tanker::PreverifiedPhoneNumberVerificationMethod.new(phone_number),
+                             Tanker::PassphraseVerificationMethod.new]
+
+      tanker2 = Tanker::Core.new @options
+      tanker2.start @identity
+      tanker2.verify_identity Tanker::PhoneNumberVerification.new(
+        phone_number, @app.get_sms_verification_code(phone_number)
+      )
+      expect(tanker2.status).to eq(Tanker::Status::READY)
+      methods = tanker2.get_verification_methods
+      tanker2.free
+      expect(methods).to eq [Tanker::PhoneNumberVerificationMethod.new(phone_number),
+                             Tanker::PassphraseVerificationMethod.new]
+    end
+  end
+
   describe 'session tokens' do
     before(:all) { @app.toggle_session_certificates true }
     after(:all) { @app.toggle_session_certificates false }
