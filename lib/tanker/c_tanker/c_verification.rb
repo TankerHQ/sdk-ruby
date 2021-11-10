@@ -49,15 +49,19 @@ module Tanker
              :email_verification, CEmailVerification,
              :passphrase, :pointer,
              :oidc_id_token, :pointer,
-             :phone_number_verification, CPhoneNumberVerification
+             :phone_number_verification, CPhoneNumberVerification,
+             :preverified_email, :pointer,
+             :preverified_phone_number, :pointer
 
       TYPE_EMAIL = 1
       TYPE_PASSPHRASE = 2
       TYPE_VERIFICATION_KEY = 3
       TYPE_OIDC_ID_TOKEN = 4
       TYPE_PHONE_NUMBER = 5
+      TYPE_PREVERIFIED_EMAIL = 6
+      TYPE_PREVERIFIED_PHONE_NUMBER = 7
 
-      def initialize(verification)
+      def initialize(verification) # rubocop:disable Metrics/CyclomaticComplexity Not relevant for a case/when
         super()
 
         unless verification.is_a? Tanker::Verification
@@ -85,11 +89,19 @@ module Tanker
           self[:type] = TYPE_PHONE_NUMBER
           self[:phone_number_verification] =
             CPhoneNumberVerification.new verification.phone_number, verification.verification_code
+        when Tanker::PreverifiedEmailVerification
+          @preverified_email = CTanker.new_cstring verification.preverified_email
+          self[:type] = TYPE_PREVERIFIED_EMAIL
+          self[:preverified_email] = @preverified_email
+        when Tanker::PreverifiedPhoneNumberVerification
+          @preverified_phone_number = CTanker.new_cstring verification.preverified_phone_number
+          self[:type] = TYPE_PREVERIFIED_PHONE_NUMBER
+          self[:preverified_phone_number] = @preverified_phone_number
         else
           raise ArgumentError, 'Unknown Tanker::Verification type!'
         end
 
-        self[:version] = 4
+        self[:version] = 5
       end
     end
   end

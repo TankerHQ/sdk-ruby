@@ -69,4 +69,28 @@ module Tanker
       @verification_code = verif_code
     end
   end
+
+  class PreverifiedEmailVerification < Verification
+    attr_reader :preverified_email
+
+    def initialize(preverified_email)
+      super()
+
+      ASSERT_UTF8.call(preverified_email)
+
+      @preverified_email = preverified_email
+    end
+  end
+
+  class PreverifiedPhoneNumberVerification < Verification
+    attr_reader :preverified_phone_number
+
+    def initialize(preverified_phone_number)
+      super()
+
+      ASSERT_UTF8.call(preverified_phone_number)
+
+      @preverified_phone_number = preverified_phone_number
+    end
+  end
 end
