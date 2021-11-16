@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'tanker/c_tanker'
+require 'tanker/encryption_options'
 require_relative 'encryption_session'
 
 module Tanker
@@ -80,17 +81,19 @@ module Tanker
 
     private
 
-    def encrypt_common(data, encryption_options = nil)
-      unless !encryption_options || encryption_options.is_a?(EncryptionOptions)
+    def encrypt_common(data, encryption_options)
+      unless encryption_options.nil? || encryption_options.is_a?(EncryptionOptions)
         raise TypeError, "expected encryption_options to be a EncryptionOptions, but got a #{encryption_options.class}"
       end
 
       inbuf = FFI::MemoryPointer.from_string(data)
 
-      encrypted_size = CTanker.tanker_encrypted_size data.bytesize
+      options = encryption_options || EncryptionOptions.new
+
+      encrypted_size = CTanker.tanker_encrypted_size(data.bytesize, options[:padding_step])
       outbuf = FFI::MemoryPointer.new(:char, encrypted_size)
 
-      CTanker.tanker_encrypt(@ctanker, outbuf, inbuf, data.bytesize, encryption_options).get
+      CTanker.tanker_encrypt(@ctanker, outbuf, inbuf, data.bytesize, options).get
 
       outbuf.read_string encrypted_size
     end

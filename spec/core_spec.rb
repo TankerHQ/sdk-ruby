@@ -2,6 +2,7 @@
 
 require_relative 'admin_helper'
 require 'tanker/core'
+require 'tanker/encryption_options'
 require 'tanker/identity'
 
 RSpec.describe Tanker do
@@ -10,6 +11,8 @@ RSpec.describe Tanker do
     @app = Tanker::App.new
     @options = Tanker::Core::Options.new app_id: @app.id, url: @app.url,
                                          sdk_type: 'sdk-ruby-test', persistent_path: ':memory:', cache_path: ':memory:'
+    @simple_encryption_overhead = 17
+    @simple_padded_encryption_overhead = @simple_encryption_overhead+1
   end
 
   after(:all) do
@@ -85,6 +88,92 @@ RSpec.describe Tanker do
     expect(decrypted).to eq(plaintext)
 
     tanker.free
+  end
+
+  it 'encrypts and decrypts with auto padding by default' do
+    tanker = Tanker::Core.new @options
+    tanker.start_anonymous @app.create_identity
+
+    plaintext = 'my clear data is clear!'
+    length_with_padme = 24
+    ciphertext = tanker.encrypt_utf8 plaintext
+
+    expect(ciphertext.length - @simple_padded_encryption_overhead).to eq(length_with_padme)
+
+    decrypted = tanker.decrypt_utf8 ciphertext
+    expect(decrypted).to eq(plaintext)
+
+    tanker.free
+  end
+
+  it 'can encrypt and decrypt with auto padding' do
+    tanker = Tanker::Core.new @options
+    tanker.start_anonymous @app.create_identity
+
+    plaintext = 'my clear data is clear!'
+    length_with_padme = 24
+    encryption_options = Tanker::EncryptionOptions.new(padding_step: Tanker::Padding::AUTO)
+    ciphertext = tanker.encrypt_utf8 plaintext, encryption_options
+
+    expect(ciphertext.length - @simple_padded_encryption_overhead).to eq(length_with_padme)
+
+    decrypted = tanker.decrypt_utf8 ciphertext
+    expect(decrypted).to eq(plaintext)
+
+    tanker.free
+  end
+
+  it 'can encrypt and decrypt with no padding' do
+    tanker = Tanker::Core.new @options
+    tanker.start_anonymous @app.create_identity
+
+    plaintext = 'Ghostriding in a field, playing for the cows!'
+    encryption_options = Tanker::EncryptionOptions.new(padding_step: Tanker::Padding::OFF)
+    ciphertext = tanker.encrypt_utf8 plaintext, encryption_options
+
+    expect(ciphertext.length - @simple_encryption_overhead).to eq(plaintext.length)
+
+    decrypted = tanker.decrypt_utf8 ciphertext
+    expect(decrypted).to eq(plaintext)
+
+    tanker.free
+  end
+
+  it 'can encrypt and decrypt with padding set to a number' do
+    tanker = Tanker::Core.new @options
+    tanker.start_anonymous @app.create_identity
+
+    plaintext = 'Ghostriding in a field, playing for the cows!'
+    step_value = 13
+    encryption_options = Tanker::EncryptionOptions.new(padding_step: Tanker::Padding.step(step_value))
+    ciphertext = tanker.encrypt_utf8 plaintext, encryption_options
+
+    expect((ciphertext.length - @simple_padded_encryption_overhead) % step_value).to eq(0)
+
+    decrypted = tanker.decrypt_utf8 ciphertext
+    expect(decrypted).to eq(plaintext)
+
+    tanker.free
+  end
+
+  it 'padding cannot be instantiated with a bad step' do
+    expect do
+      Tanker::Padding.step('2')
+    end.to raise_error(TypeError, 'expected step to be an Integer >= 2, but got a String')
+    expect do
+      Tanker::Padding.step(nil)
+    end.to raise_error(TypeError, 'expected step to be an Integer >= 2, but got a NilClass')
+    expect do
+      Tanker::Padding.step(2.42)
+    end.to raise_error(TypeError, 'expected step to be an Integer >= 2, but got a Float')
+
+    expect { Tanker::Padding.step(0) }.to raise_error(ArgumentError, 'expected step to be an Integer >= 2, but got 0')
+    expect { Tanker::Padding.step(1) }.to raise_error(ArgumentError, 'expected step to be an Integer >= 2, but got 1')
+    expect { Tanker::Padding.step(-1) }.to raise_error(ArgumentError, 'expected step to be an Integer >= 2, but got -1')
+  end
+
+  it 'padding cannot be instantiated without the step method' do
+    expect { Tanker::Padding.new(42) }.to raise_error(NoMethodError)
   end
 
   it 'can encrypt, share, and decrypt between two users' do
