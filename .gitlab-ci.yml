@@ -33,7 +33,7 @@ default:
 
 stages:
   - lint
-  - build-native
+  - prepare
   - check
   - deploy
 
@@ -138,49 +138,39 @@ lint:
     RBENV_VERSION: 2.7.3
     TANKER_PROFILES: --profile macos-armv8-release-shared
 
-######################
-# build-native stage #
-######################
+#################
+# prepare stage #
+#################
 
-.rules/build-native:
+.rules/prepare:
   rules:
     - !reference [.rules/web/auto, rules]
     - !reference [.rules/mr/manual, rules]
     - !reference [.rules/deploy-pipeline, rules]
 
-.build-native:
-  stage: build-native
+.prepare:
+  stage: prepare
   extends:
     - .before-script/rbenv-path
-    - .rules/build-native
+    - .rules/prepare
     - .release-artifacts
   script:
     - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE $TANKER_PROFILES
 
-build-native/linux/2.6:
-  extends:
-    - .profiles/linux/2.6
-    - .build-native
-
-build-native/linux/2.7:
+prepare/linux:
   extends:
     - .profiles/linux/2.7
-    - .build-native
+    - .prepare
 
-build-native/linux/3.0:
-  extends:
-    - .profiles/linux/3.0
-    - .build-native
-
-build-native/macos/x86_64/2.7:
+prepare/macos/x86_64:
   extends:
     - .profiles/macos/x86_64/2.7
-    - .build-native
+    - .prepare
 
-build-native/macos/arm/2.7:
+prepare/macos/arm:
   extends:
     - .profiles/macos/arm/2.7
-    - .build-native
+    - .prepare
 
 ###############
 # check stage #
@@ -222,7 +212,7 @@ check/native-from-sources/macos/arm/2.7:
     - .check/native-from-sources
 
 .rules/check/deployed-native:
-  rules: !reference [.rules/build-native, rules]
+  rules: !reference [.rules/prepare, rules]
 
 .check/deployed-native:
   stage: check
@@ -237,35 +227,35 @@ check/deployed-native/linux/2.6:
     - .profiles/linux/2.6
     - .check/deployed-native
   needs:
-    - build-native/linux/2.6
+    - prepare/linux
 
 check/deployed-native/linux/2.7:
   extends:
     - .profiles/linux/2.7
     - .check/deployed-native
   needs:
-    - build-native/linux/2.7
+    - prepare/linux
 
 check/deployed-native/linux/3.0:
   extends:
     - .profiles/linux/3.0
     - .check/deployed-native
   needs:
-    - build-native/linux/3.0
+    - prepare/linux
 
 check/deployed-native/macos/x86_64/2.7:
   extends:
     - .profiles/macos/x86_64/2.7
     - .check/deployed-native
   needs:
-    - build-native/macos/x86_64/2.7
+    - prepare/macos/x86_64
 
 check/deployed-native/macos/arm/2.7:
   extends:
     - .profiles/macos/arm/2.7
     - .check/deployed-native
   needs:
-    - build-native/macos/arm/2.7
+    - prepare/macos/arm
 
 .check/downstream:
   stage: check
@@ -320,11 +310,9 @@ deploy:
     - poetry run python run-ci.py reset-branch $UPSTREAM_BRANCH_NAME
     - poetry run python run-ci.py deploy --version $SDK_RUBY_RELEASE_VERSION
   needs:
-    - build-native/linux/3.0
-    - build-native/linux/2.7
-    - build-native/linux/2.6
-    - build-native/macos/x86_64/2.7
-    - build-native/macos/arm/2.7
+    - prepare/linux
+    - prepare/macos/x86_64
+    - prepare/macos/arm
   variables:
     RBENV_VERSION: 2.6.7
   release:
