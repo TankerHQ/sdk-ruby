@@ -9,7 +9,7 @@ RSpec.describe Tanker do
     Tanker::App.use_test_log_handler
     @app = Tanker::App.new
     @options = Tanker::Core::Options.new app_id: @app.id, url: @app.url,
-                                         sdk_type: 'sdk-ruby-test', writable_path: ':memory:'
+                                         sdk_type: 'sdk-ruby-test', writable_path: ':memory:', cache_path: ':memory:'
   end
 
   after(:all) do
@@ -25,7 +25,7 @@ RSpec.describe Tanker do
   end
 
   it 'fails to create an invalid Tanker object' do
-    options = Tanker::Core::Options.new app_id: 'bad app id', writable_path: ':memory:'
+    options = Tanker::Core::Options.new app_id: 'bad app id', writable_path: ':memory:', cache_path: ':memory:'
     expect { Tanker::Core.new options }.to(raise_error) do |e|
       expect(e).to be_a(Tanker::Error)
       expect(e).to be_a(Tanker::Error::InvalidArgument)
