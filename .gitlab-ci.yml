@@ -212,7 +212,9 @@ check/native-from-sources/macos/arm/2.7:
     - .check/native-from-sources
 
 .rules/check/deployed-native:
-  rules: !reference [.rules/prepare, rules]
+  rules:
+    - !reference [.rules/mr/manual, rules]
+    - !reference [.rules/web/auto, rules]
 
 .check/deployed-native:
   stage: check
