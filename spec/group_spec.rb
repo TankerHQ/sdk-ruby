@@ -9,7 +9,7 @@ RSpec.describe "#{Tanker} Groups" do
     Tanker::App.use_test_log_handler
     @app = Tanker::App.new
     @options = Tanker::Core::Options.new app_id: @app.id, url: @app.url,
-                                         sdk_type: 'sdk-ruby-test', writable_path: ':memory:', cache_path: ':memory:'
+                                         sdk_type: 'sdk-ruby-test', persistent_path: ':memory:', cache_path: ':memory:'
   end
 
   before(:each) do
