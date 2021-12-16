@@ -1,6 +1,6 @@
 include:
   project: TankerHQ/gitlab-ci-files
-  ref: 2021-10-13-215
+  ref: 2021-12-16-236
   file: /common.yml
 
 ############
@@ -98,28 +98,23 @@ lint:
     RBENV_VERSION: 2.7.3
   script:
     - poetry run python run-ci.py lint
+  tags: !reference [.tags/linux, tags]
 
 ############
 # profiles #
 ############
 
 .profiles/linux/2.6:
-  extends:
-    - .tags/linux
   variables:
     RBENV_VERSION: 2.6.7
     TANKER_PROFILES: --profile linux-release-shared
 
 .profiles/linux/2.7:
-  extends:
-    - .tags/linux
   variables:
     RBENV_VERSION: 2.7.3
     TANKER_PROFILES: --profile linux-release-shared
 
 .profiles/linux/3.0:
-  extends:
-    - .tags/linux
   variables:
     RBENV_VERSION: 3.0.1
     TANKER_PROFILES: --profile linux-release-shared
@@ -161,6 +156,7 @@ prepare/linux:
   extends:
     - .profiles/linux/2.7
     - .prepare
+  tags: !reference [.tags/linux, tags]
 
 prepare/macos/x86_64:
   extends:
@@ -190,16 +186,19 @@ check/native-from-sources/linux/2.6:
   extends:
     - .profiles/linux/2.6
     - .check/native-from-sources
+  tags: !reference [.tags/compilation-linux, tags]
 
 check/native-from-sources/linux/2.7:
   extends:
     - .profiles/linux/2.7
     - .check/native-from-sources
+  tags: !reference [.tags/compilation-linux, tags]
 
 check/native-from-sources/linux/3.0:
   extends:
     - .profiles/linux/3.0
     - .check/native-from-sources
+  tags: !reference [.tags/compilation-linux, tags]
 
 check/native-from-sources/macos/x86_64/2.7:
   extends:
@@ -230,6 +229,7 @@ check/deployed-native/linux/2.6:
     - .check/deployed-native
   needs:
     - prepare/linux
+  tags: !reference [.tags/linux, tags]
 
 check/deployed-native/linux/2.7:
   extends:
@@ -237,6 +237,7 @@ check/deployed-native/linux/2.7:
     - .check/deployed-native
   needs:
     - prepare/linux
+  tags: !reference [.tags/linux, tags]
 
 check/deployed-native/linux/3.0:
   extends:
@@ -244,6 +245,7 @@ check/deployed-native/linux/3.0:
     - .check/deployed-native
   needs:
     - prepare/linux
+  tags: !reference [.tags/linux, tags]
 
 check/deployed-native/macos/x86_64/2.7:
   extends:
@@ -273,18 +275,21 @@ check/downstream/linux/2.6:
     - .profiles/linux/2.6
     - .check/downstream
     - .rules/check/downstream/linux
+  tags: !reference [.tags/linux, tags]
 
 check/downstream/linux/2.7:
   extends:
     - .profiles/linux/2.7
     - .check/downstream
     - .rules/check/downstream/linux
+  tags: !reference [.tags/linux, tags]
 
 check/downstream/linux/3.0:
   extends:
     - .profiles/linux/3.0
     - .check/downstream
     - .rules/check/downstream/linux
+  tags: !reference [.tags/linux, tags]
 
 check/downstream/macos/x86_64/2.7:
   extends:
@@ -305,7 +310,6 @@ check/downstream/macos/arm/2.7:
 deploy:
   stage: deploy
   extends:
-    - .tags/linux
     - .rules/deploy/ruby
     - .before-script/rbenv-path
   script:
@@ -320,3 +324,4 @@ deploy:
   release:
     description: sdk-ruby v$SDK_RUBY_RELEASE_VERSION
     tag_name: v$SDK_RUBY_RELEASE_VERSION
+  tags: !reference [.tags/linux, tags]
