@@ -33,7 +33,7 @@ module Tanker
     def encrypt_common(data)
       inbuf = FFI::MemoryPointer.from_string(data)
 
-      encrypted_size = CTanker.tanker_encryption_session_encrypted_size data.bytesize
+      encrypted_size = CTanker.tanker_encryption_session_encrypted_size(@csession, data.bytesize)
       outbuf = FFI::MemoryPointer.new(:char, encrypted_size)
 
       CTanker.tanker_encryption_session_encrypt(@csession, outbuf, inbuf, data.bytesize).get

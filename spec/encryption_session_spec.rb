@@ -10,6 +10,8 @@ RSpec.describe "#{Tanker} Encryption Sessions" do
     @app = Tanker::App.new
     @options = Tanker::Core::Options.new app_id: @app.id, url: @app.url,
                                          sdk_type: 'sdk-ruby-test', persistent_path: ':memory:', cache_path: ':memory:'
+    @encryption_session_overhead = 57
+    @encryption_session_padded_overhead = @encryption_session_overhead+1
   end
 
   before(:each) do
@@ -135,5 +137,48 @@ RSpec.describe "#{Tanker} Encryption Sessions" do
       expect(e).to be_a(Tanker::Error::InvalidArgument)
       expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
     end
+  end
+
+  it 'encrypts with padding auto by default' do
+    plaintext = 'my clear data is clear!'
+    length_with_padme = 24
+    sess = @alice.create_encryption_session
+
+    encrypted = sess.encrypt_utf8 plaintext
+
+    expect(encrypted.length - @encryption_session_padded_overhead).to eq(length_with_padme)
+    expect(@alice.decrypt_utf8(encrypted)).to eq(plaintext)
+  end
+
+  it 'encrypts with auto padding' do
+    plaintext = 'my clear data is clear!'
+    length_with_padme = 24
+    encryption_options = Tanker::EncryptionOptions.new(padding_step: Tanker::Padding::AUTO)
+    sess = @alice.create_encryption_session encryption_options
+    encrypted = sess.encrypt_utf8 plaintext
+
+    expect(encrypted.length - @encryption_session_padded_overhead).to eq(length_with_padme)
+    expect(@alice.decrypt_utf8(encrypted)).to eq(plaintext)
+  end
+
+  it 'encrypts with no padding' do
+    plaintext = 'L\'Assommoir'
+    encryption_options = Tanker::EncryptionOptions.new(padding_step: Tanker::Padding::OFF)
+    sess = @alice.create_encryption_session encryption_options
+    encrypted = sess.encrypt_utf8 plaintext
+
+    expect(encrypted.length - @encryption_session_overhead).to eq(plaintext.length)
+    expect(@alice.decrypt_utf8(encrypted)).to eq(plaintext)
+  end
+
+  it 'encrypts with a padding step' do
+    plaintext = 'Au Bonheur des Dames'
+    step_value = 13
+    options = Tanker::EncryptionOptions.new(padding_step: Tanker::Padding.step(step_value))
+    sess = @alice.create_encryption_session options
+    encrypted = sess.encrypt_utf8 plaintext
+
+    expect((encrypted.length - @encryption_session_padded_overhead) % step_value).to eq 0
+    expect(@alice.decrypt_utf8(encrypted)).to eq(plaintext)
   end
 end
