@@ -40,6 +40,7 @@ module Tanker
     blocking_attach_function :tanker_create, [Tanker::Core::Options], CFuture
     blocking_attach_function :tanker_destroy, [:session_pointer], CFuture
     blocking_attach_function :tanker_start, [:session_pointer, :string], CFuture
+    blocking_attach_function :tanker_enroll_user, [:session_pointer, :string, CVerificationList], CFuture
     blocking_attach_function :tanker_register_identity, [:session_pointer, CVerification,
                                                          Tanker::VerificationOptions], CFuture
     blocking_attach_function :tanker_verify_identity, [:session_pointer, CVerification,

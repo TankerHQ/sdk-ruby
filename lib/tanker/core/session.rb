@@ -11,6 +11,11 @@ module Tanker
       CTanker.tanker_start(@ctanker, identity).get.address
     end
 
+    def enroll_user(identity, verifications)
+      cverifs = CTanker::CVerificationList.new(verifications)
+      CTanker.tanker_enroll_user(@ctanker, identity, cverifs).get
+    end
+
     def generate_verification_key
       CTanker.tanker_generate_verification_key(@ctanker).get_string
     end
