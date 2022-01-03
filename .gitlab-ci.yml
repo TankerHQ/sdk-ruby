@@ -95,7 +95,7 @@ lint:
     - .tags/linux
     - .before-script/rbenv-path
   variables:
-    RBENV_VERSION: 2.7.3
+    RBENV_VERSION: 2.7.5
   script:
     - poetry run python run-ci.py lint
   tags: !reference [.tags/linux, tags]
@@ -106,17 +106,22 @@ lint:
 
 .profiles/linux/2.6:
   variables:
-    RBENV_VERSION: 2.6.7
+    RBENV_VERSION: 2.6.9
     TANKER_PROFILES: --profile linux-release-shared
 
 .profiles/linux/2.7:
   variables:
-    RBENV_VERSION: 2.7.3
+    RBENV_VERSION: 2.7.5
     TANKER_PROFILES: --profile linux-release-shared
 
 .profiles/linux/3.0:
   variables:
-    RBENV_VERSION: 3.0.1
+    RBENV_VERSION: 3.0.3
+    TANKER_PROFILES: --profile linux-release-shared
+
+.profiles/linux/3.1:
+  variables:
+    RBENV_VERSION: 3.1.0
     TANKER_PROFILES: --profile linux-release-shared
 
 .profiles/macos/x86_64/2.7:
@@ -200,6 +205,12 @@ check/native-from-sources/linux/3.0:
     - .check/native-from-sources
   tags: !reference [.tags/compilation-linux, tags]
 
+check/native-from-sources/linux/3.1:
+  extends:
+    - .profiles/linux/3.1
+    - .check/native-from-sources
+  tags: !reference [.tags/compilation-linux, tags]
+
 check/native-from-sources/macos/x86_64/2.7:
   extends:
     - .profiles/macos/x86_64/2.7
@@ -242,6 +253,14 @@ check/deployed-native/linux/2.7:
 check/deployed-native/linux/3.0:
   extends:
     - .profiles/linux/3.0
+    - .check/deployed-native
+  needs:
+    - prepare/linux
+  tags: !reference [.tags/linux, tags]
+
+check/deployed-native/linux/3.1:
+  extends:
+    - .profiles/linux/3.1
     - .check/deployed-native
   needs:
     - prepare/linux
@@ -291,6 +310,13 @@ check/downstream/linux/3.0:
     - .rules/check/downstream/linux
   tags: !reference [.tags/linux, tags]
 
+check/downstream/linux/3.1:
+  extends:
+    - .profiles/linux/3.1
+    - .check/downstream
+    - .rules/check/downstream/linux
+  tags: !reference [.tags/linux, tags]
+
 check/downstream/macos/x86_64/2.7:
   extends:
     - .profiles/macos/x86_64/2.7
@@ -320,7 +346,7 @@ deploy:
     - prepare/macos/x86_64
     - prepare/macos/arm
   variables:
-    RBENV_VERSION: 2.6.7
+    RBENV_VERSION: 2.6.9
   release:
     description: sdk-ruby v$SDK_RUBY_RELEASE_VERSION
     tag_name: v$SDK_RUBY_RELEASE_VERSION
