@@ -36,6 +36,7 @@ RSpec.describe Tanker do
   it 'can create a valid Tanker object' do
     tanker = Tanker::Core.new @options
     expect(tanker).to be_kind_of Tanker::Core
+    tanker.free
   end
 
   it 'throws when using a Core after free' do
@@ -280,5 +281,8 @@ RSpec.describe Tanker do
       expect(e).to be_a(Tanker::Error::IdentityAlreadyAttached)
       expect(e.code).to eq(Tanker::Error::IDENTITY_ALREADY_ATTACHED)
     end
+
+    alice.free
+    bob.free
   end
 end
