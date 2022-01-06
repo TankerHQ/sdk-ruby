@@ -285,4 +285,12 @@ RSpec.describe Tanker do
     alice.free
     bob.free
   end
+
+  it 'can create a valid Tanker object and not free it' do
+    Tanker::Core.new @options
+    # We forget the free, the finalizer will handle it, probably when the ruby
+    # process terminates. Then there is a potential deadlock if Tanker calls
+    # back ruby because the ffi thread that runs the callbacks will already have
+    # stopped. This test will make sure we don't have such a deadlock.
+  end
 end
