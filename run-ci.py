@@ -43,6 +43,16 @@ def lint() -> None:
     tankerci.run("bundle", "exec", "rake", "rubocop")
 
 
+def set_credentials() -> None:
+    gem_folder = Path.home() / ".gem"
+    gem_folder.mkdir(exist_ok=True)
+    api_key = os.environ["GEM_HOST_API_KEY"]
+    credential_file = gem_folder / "credentials"
+    credential_file.touch(mode=0o600)
+    credential_file.write_text(f":rubygems_api_key: {api_key}")
+
+
+
 def deploy(version: str) -> None:
     expected_libs = [
         "vendor/tanker/linux-x86_64/libctanker.so",
@@ -55,6 +65,7 @@ def deploy(version: str) -> None:
             sys.exit(f"Error: {expected_path} does not exist!")
 
     tankerci.bump.bump_files(version)
+    set_credentials()
 
     # NOTE: this commands also re-gerenates the lock as a side-effect since the
     # gemspec has changed - keep this before the git commands
