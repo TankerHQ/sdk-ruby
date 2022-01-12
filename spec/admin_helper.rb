@@ -120,6 +120,11 @@ module Tanker
       app_options = Admin::AppUpdateOptions.new(preverified_verification: enable)
       @admin.app_update(@app.id, app_options)
     end
+
+    def toggle_user_enrollment(enable)
+      app_options = Admin::AppUpdateOptions.new(user_enrollment: enable)
+      @admin.app_update(@app.id, app_options)
+    end
   end
 end
 

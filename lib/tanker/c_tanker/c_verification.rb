@@ -104,5 +104,32 @@ module Tanker
         self[:version] = 5
       end
     end
+
+    class CVerificationList < FFI::Struct
+      layout :version, :uint8,
+             :verifications, :pointer,
+             :count, :uint32
+
+      def initialize(verifications)
+        super()
+
+        unless verifications.is_a?(Array)
+          raise TypeError, 'Verifications argument is not an Array[Tanker::Verification]'
+        end
+
+        self[:version] = 1
+        self[:count] = verifications.length
+
+        # NOTE: Instance variables are required to keep the CVerifications alive
+        @verifications = []
+        self[:verifications] = FFI::MemoryPointer.new(CVerification, self[:count])
+        verifications.each_with_index do |verification, idx|
+          @verifications.push(CVerification.new(verification))
+          # NOTE: memcopy
+          str = @verifications[idx].pointer.read_bytes CVerification.size
+          self[:verifications].put_bytes(idx * CVerification.size, str, 0, CVerification.size)
+        end
+      end
+    end
   end
 end

@@ -350,4 +350,72 @@ RSpec.describe "#{Tanker} Verification" do
       expect(token).to_not be_nil
     end
   end
+
+  describe 'user enrollment' do
+    before(:all) { @app.toggle_user_enrollment true }
+    after(:all) { @app.toggle_user_enrollment false }
+
+    before(:each) { @server = Tanker::Core.new @options }
+    after(:each) { @server.free }
+
+    it 'fails with passphrase' do
+      expect { @server.enroll_user(@identity, [Tanker::PassphraseVerification.new('The Beauty In The Ordinary')]) }
+        .to(raise_error) do |e|
+        expect(e).to be_a(Tanker::Error)
+        expect(e).to be_a(Tanker::Error::InvalidArgument)
+        expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+      end
+    end
+
+    it 'fails with email' do
+      email = 'mono@chromat.ic'
+      verif = Tanker::EmailVerification.new(email, @app.get_email_verification_code(email))
+      expect { @server.enroll_user(@identity, [verif]) }
+        .to(raise_error) do |e|
+        expect(e).to be_a(Tanker::Error)
+        expect(e).to be_a(Tanker::Error::InvalidArgument)
+        expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+      end
+    end
+
+    it 'fails with phone number' do
+      phone_number = '+33639982233'
+      verif = Tanker::PhoneNumberVerification.new(phone_number, @app.get_sms_verification_code(phone_number))
+      expect { @server.enroll_user(@identity, [verif]) }
+        .to(raise_error) do |e|
+        expect(e).to be_a(Tanker::Error)
+        expect(e).to be_a(Tanker::Error::InvalidArgument)
+        expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+      end
+    end
+
+    it 'works with preverified methods' do
+      phone_number = '+33639982233'
+      email = 'mono@chromat.ic'
+      @server.enroll_user(@identity, [
+                            Tanker::PreverifiedPhoneNumberVerification.new(phone_number),
+                            Tanker::PreverifiedEmailVerification.new(email)
+                          ])
+
+      tanker1 = Tanker::Core.new @options
+      tanker1.start @identity
+      tanker2 = Tanker::Core.new @options
+      tanker2.start @identity
+
+      expect(tanker1.status).to eq(Tanker::Status::IDENTITY_VERIFICATION_NEEDED)
+      tanker1.verify_identity Tanker::EmailVerification.new(
+        email, @app.get_email_verification_code(email)
+      )
+      expect(tanker1.status).to eq(Tanker::Status::READY)
+
+      expect(tanker2.status).to eq(Tanker::Status::IDENTITY_VERIFICATION_NEEDED)
+      tanker2.verify_identity Tanker::PhoneNumberVerification.new(
+        phone_number, @app.get_sms_verification_code(phone_number)
+      )
+      expect(tanker2.status).to eq(Tanker::Status::READY)
+
+      tanker1.free
+      tanker2.free
+    end
+  end
 end
