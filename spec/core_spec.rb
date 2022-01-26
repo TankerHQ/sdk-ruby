@@ -143,10 +143,12 @@ RSpec.describe Tanker do
     tanker = Tanker::Core.new @options
     tanker.start_anonymous @app.create_identity
 
-    devices = tanker.device_list
-    expect(devices.length).to be 1
-    expect(devices[0].revoked?).to be false
-    expect(devices[0].device_id).to eq tanker.device_id
+    Gem::Deprecate.skip_during do
+      devices = tanker.device_list
+      expect(devices.length).to be 1
+      expect(devices[0].revoked?).to be false
+      expect(devices[0].device_id).to eq tanker.device_id
+    end
 
     tanker.free
   end
