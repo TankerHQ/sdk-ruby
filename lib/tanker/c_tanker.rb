@@ -52,7 +52,6 @@ module Tanker
     blocking_attach_function :tanker_status, [:session_pointer], :uint32
     blocking_attach_function :tanker_generate_verification_key, [:session_pointer], CFuture
     blocking_attach_function :tanker_device_id, [:session_pointer], CFuture
-    blocking_attach_function :tanker_revoke_device, [:session_pointer, :string], CFuture
     blocking_attach_function :tanker_get_device_list, [:session_pointer], CFuture
 
     blocking_attach_function :tanker_attach_provisional_identity, [:session_pointer, :string], CFuture

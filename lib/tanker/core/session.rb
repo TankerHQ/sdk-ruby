@@ -5,8 +5,6 @@ require_relative 'status'
 
 module Tanker
   class Core
-    extend Gem::Deprecate
-
     def start(identity)
       CTanker.tanker_start(@ctanker, identity).get.address
     end
@@ -64,12 +62,6 @@ module Tanker
       CTanker.tanker_free_device_list device_list_ptr
       device_info_list
     end
-
-    def revoke_device(device_id)
-      CTanker.tanker_revoke_device(@ctanker, device_id).get
-    end
-
-    deprecate :revoke_device, :none, 2021, 7
 
     def stop
       CTanker.tanker_stop(@ctanker).get
