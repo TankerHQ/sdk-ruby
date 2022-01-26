@@ -10,7 +10,6 @@ require_relative 'c_tanker/c_future'
 require_relative 'c_tanker/c_verification'
 require_relative 'c_tanker/c_verification_method'
 require_relative 'c_tanker/c_log_record'
-require_relative 'c_tanker/c_event'
 require_relative 'c_tanker/c_device_info'
 
 module FFI::Library
@@ -32,7 +31,6 @@ module Tanker
     typedef :pointer, :read_operation_pointer
 
     callback :log_handler_callback, [CLogRecord.by_ref], :void
-    callback :event_callback, [:pointer], :void
     callback :stream_input_source_callback, [:pointer, :int64, :read_operation_pointer, :pointer], :void
 
     blocking_attach_function :tanker_init, [], :void
@@ -97,7 +95,6 @@ module Tanker
     blocking_attach_function :tanker_stream_close, [:stream_pointer], CFuture
 
     blocking_attach_function :tanker_set_log_handler, [:log_handler_callback], :void
-    blocking_attach_function :tanker_event_connect, [:session_pointer, :uint32, :event_callback, :pointer], CFuture
 
     blocking_attach_function :tanker_prehash_password, [:string], CFuture
 
