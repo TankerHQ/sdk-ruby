@@ -3,8 +3,6 @@
 module Tanker
   # Main entry point for the Tanker SDK. Can open a Tanker session.
   class Core
-    extend Gem::Deprecate
-
     @log_handler_lock = Mutex.new
     @log_handler_set = 0
 
@@ -33,7 +31,6 @@ module Tanker
       # Do not spam the console of our users.
       self.class.set_log_handler { |_| } unless self.class.test_and_set_log_handler == 1 # rubocop:disable Lint/EmptyBlock
 
-      @revoke_event_handlers = Set.new
       @ctanker = CTanker.tanker_create(options).get
       @freed = false
       ctanker_addr = @ctanker.address
@@ -42,11 +39,6 @@ module Tanker
 
         CTanker.tanker_destroy(FFI::Pointer.new(:void, ctanker_addr)).get
       end
-
-      @device_revoked_handler = lambda { |_|
-        Thread.new { @revoke_event_handlers.each(&:call) }
-      }
-      CTanker.tanker_event_connect(@ctanker, CTanker::CTankerEvent::DEVICE_REVOKED, @device_revoked_handler, nil).get
     end
 
     def free
@@ -59,16 +51,6 @@ module Tanker
           raise "using Tanker::Core##{method} after free"
         end
       end
-    end
-
-    def connect_device_revoked_handler(&block)
-      @revoke_event_handlers.add block
-    end
-
-    deprecate :connect_device_revoked_handler, :none, 2021, 7
-
-    def disconnect_handler(&block)
-      @revoke_event_handlers.delete block
     end
   end
 

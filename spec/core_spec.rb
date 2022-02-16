@@ -139,42 +139,16 @@ RSpec.describe Tanker do
     bob.free
   end
 
-  it 'can self-revoke' do
-    tanker = Tanker::Core.new @options
-    tanker.start_anonymous @app.create_identity
-
-    got_revoked_event = false
-    tanker.connect_device_revoked_handler do
-      # Tanker is already stopped, but let's call it anyway just to check it
-      # doesn't deadlock.
-      tanker.free
-      got_revoked_event = true
-    end
-
-    Gem::Deprecate.skip_during do
-      tanker.revoke_device tanker.device_id
-    end
-    expect { tanker.encrypt_utf8 'What could possibly go wrong?' }.to(raise_error) do |e|
-      expect(e).to be_a(Tanker::Error)
-      expect(e).to be_a(Tanker::Error::DeviceRevoked)
-      expect(e.code).to eq(Tanker::Error::DEVICE_REVOKED)
-    end
-    start = Time.now
-    until got_revoked_event
-      raise "timeout: didn't get revoked event" if Time.now - start > 2
-
-      sleep 0.1
-    end
-  end
-
   it 'has a correct device list' do
     tanker = Tanker::Core.new @options
     tanker.start_anonymous @app.create_identity
 
-    devices = tanker.device_list
-    expect(devices.length).to be 1
-    expect(devices[0].revoked?).to be false
-    expect(devices[0].device_id).to eq tanker.device_id
+    Gem::Deprecate.skip_during do
+      devices = tanker.device_list
+      expect(devices.length).to be 1
+      expect(devices[0].revoked?).to be false
+      expect(devices[0].device_id).to eq tanker.device_id
+    end
 
     tanker.free
   end
