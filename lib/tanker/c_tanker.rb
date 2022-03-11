@@ -52,6 +52,9 @@ module Tanker
     blocking_attach_function :tanker_device_id, [:session_pointer], CFuture
     blocking_attach_function :tanker_get_device_list, [:session_pointer], CFuture
 
+    blocking_attach_function :tanker_create_oidc_nonce, [:session_pointer], CFuture
+    blocking_attach_function :tanker_set_oidc_test_nonce, [:session_pointer, :string], CFuture
+
     blocking_attach_function :tanker_attach_provisional_identity, [:session_pointer, :string], CFuture
     blocking_attach_function :tanker_verify_provisional_identity, [:session_pointer, CVerification], CFuture
 
