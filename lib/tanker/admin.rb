@@ -8,17 +8,18 @@ require_relative 'admin/app'
 
 module Tanker
   class Admin
-    def initialize(admin_url:, api_url:, trustchain_url:, id_token:)
-      @admin_url = admin_url
-      @id_token = id_token
+    def initialize(app_management_token:, app_management_url:, api_url:, environment_name:, trustchain_url:)
+      @app_management_token = app_management_token
+      @app_management_url = app_management_url
       @api_url = api_url
+      @environment_name = environment_name
       @trustchain_url = trustchain_url
     end
 
     # Authenticate to the Tanker admin server API
     # This must be called before doing any other operation
     def connect
-      @cadmin = CAdmin.tanker_admin_connect(@admin_url, @id_token).get
+      @cadmin = CAdmin.tanker_admin_connect(@app_management_url, @app_management_token, @environment_name).get
       cadmin_addr = @cadmin.address
       ObjectSpace.define_finalizer(@cadmin) do |_|
         CAdmin.tanker_admin_destroy(FFI::Pointer.new(:void, cadmin_addr)).get

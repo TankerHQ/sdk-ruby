@@ -21,9 +21,10 @@ end
 class AppConfig
   include Singleton
 
-  attr_reader :id_token
+  attr_reader :app_management_token
+  attr_reader :app_management_url
   attr_reader :api_url
-  attr_reader :admin_url
+  attr_reader :environment_name
   attr_reader :oidc_config
   attr_reader :trustchain_url
 
@@ -35,10 +36,11 @@ class AppConfig
   end
 
   def initialize
-    @id_token = AppConfig.safe_get_env 'TANKER_ID_TOKEN'
-    @trustchain_url = AppConfig.safe_get_env 'TANKER_TRUSTCHAIND_URL'
+    @app_management_token = AppConfig.safe_get_env 'TANKER_MANAGEMENT_API_ACCESS_TOKEN'
+    @app_management_url = AppConfig.safe_get_env 'TANKER_MANAGEMENT_API_URL'
     @api_url = AppConfig.safe_get_env 'TANKER_APPD_URL'
-    @admin_url = AppConfig.safe_get_env 'TANKER_ADMIND_URL'
+    @environment_name = AppConfig.safe_get_env 'TANKER_MANAGEMENT_API_DEFAULT_ENVIRONMENT_NAME'
+    @trustchain_url = AppConfig.safe_get_env 'TANKER_TRUSTCHAIND_URL'
 
     client_id = AppConfig.safe_get_env 'TANKER_OIDC_CLIENT_ID'
     client_secret = AppConfig.safe_get_env 'TANKER_OIDC_CLIENT_SECRET'
@@ -64,9 +66,10 @@ module Tanker
     def initialize
       config = AppConfig.instance
       @admin = Admin.new(
-        admin_url: config.admin_url,
-        id_token: config.id_token,
+        app_management_token: config.app_management_token,
+        app_management_url: config.app_management_url,
         api_url: config.api_url,
+        environment_name: config.environment_name,
         trustchain_url: config.trustchain_url
       )
       @admin.connect
