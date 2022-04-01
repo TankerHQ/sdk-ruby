@@ -248,6 +248,23 @@ RSpec.describe "#{Tanker} streams" do
     expect(decrypted).to eq(plaintext_10mb)
   end
 
+  it 'can encrypt with padding' do
+    plaintext_10mb = '012' * 1024 * 1024 + 'xx'
+
+    in_stream = StringIO.new(plaintext_10mb)
+
+    encrypted_stream = @tanker.encrypt_stream in_stream, Tanker::EncryptionOptions.new(padding_step: Tanker::Padding.step(500))
+    encrypted = encrypted_stream.read
+    encrypted_stream.close
+    expect(encrypted.length).to eq(3146248)
+    in_stream = StringIO.new(encrypted)
+    decrypted_stream = @tanker.decrypt_stream in_stream
+
+    decrypted = decrypted_stream.read
+    decrypted_stream.close
+    expect(decrypted).to eq(plaintext_10mb)
+  end
+
   it 'can close a stream half-way through' do
     plaintext_10mb = 'This string is 32 bytes long...?' * 32 * 1024 * 10
 
