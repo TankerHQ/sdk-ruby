@@ -317,44 +317,6 @@ RSpec.describe "#{Tanker} Verification" do
     end
   end
 
-  describe 'session tokens' do
-    before(:all) { @app.toggle_session_certificates true }
-    after(:all) { @app.toggle_session_certificates false }
-
-    it 'can get a session token with register_identity' do
-      tanker = Tanker::Core.new @options
-      tanker.start @identity
-      options = Tanker::VerificationOptions.new(with_session_token: true)
-      verif = Tanker::PassphraseVerification.new('Five hundred small segfaults')
-      token = tanker.register_identity(verif, options)
-      tanker.free
-      expect(token).to_not be_nil
-    end
-
-    it 'can get a session token with verify_identity' do
-      tanker = Tanker::Core.new @options
-      tanker.start @identity
-      options = Tanker::VerificationOptions.new(with_session_token: true)
-      verif = Tanker::PassphraseVerification.new('Five hundred small segfaults')
-      tanker.register_identity(verif)
-      token = tanker.verify_identity(verif, options)
-      tanker.free
-      expect(token).to_not be_nil
-    end
-
-    it 'can get a session token with set_verification_method' do
-      tanker = Tanker::Core.new @options
-      tanker.start @identity
-      options = Tanker::VerificationOptions.new(with_session_token: true)
-      verif = Tanker::PassphraseVerification.new('Five hundred small segfaults')
-      verif2 = Tanker::PassphraseVerification.new('One dime')
-      tanker.register_identity(verif)
-      token = tanker.set_verification_method(verif2, options)
-      tanker.free
-      expect(token).to_not be_nil
-    end
-  end
-
   describe 'user enrollment' do
     before(:all) { @app.toggle_user_enrollment true }
     after(:all) { @app.toggle_user_enrollment false }
