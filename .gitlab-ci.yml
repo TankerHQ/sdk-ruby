@@ -104,11 +104,6 @@ lint:
 # profiles #
 ############
 
-.profiles/linux/2.6:
-  variables:
-    RBENV_VERSION: 2.6.9
-    TANKER_PROFILES: --profile linux-release-shared
-
 .profiles/linux/2.7:
   variables:
     RBENV_VERSION: 2.7.5
@@ -121,7 +116,7 @@ lint:
 
 .profiles/linux/3.1:
   variables:
-    RBENV_VERSION: 3.1.0
+    RBENV_VERSION: 3.1.1
     TANKER_PROFILES: --profile linux-release-shared
 
 .profiles/macos/x86_64/2.7:
@@ -187,12 +182,6 @@ prepare/macos/arm:
     - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=same-as-branch $TANKER_PROFILES
     - poetry run python run-ci.py --isolate-conan-user-home build --test
 
-check/native-from-sources/linux/2.6:
-  extends:
-    - .profiles/linux/2.6
-    - .check/native-from-sources
-  tags: !reference [.tags/compilation-linux, tags]
-
 check/native-from-sources/linux/2.7:
   extends:
     - .profiles/linux/2.7
@@ -233,14 +222,6 @@ check/native-from-sources/macos/arm/2.7:
     - .rules/check/deployed-native
   script:
     - poetry run python run-ci.py --isolate-conan-user-home build --test
-
-check/deployed-native/linux/2.6:
-  extends:
-    - .profiles/linux/2.6
-    - .check/deployed-native
-  needs:
-    - prepare/linux
-  tags: !reference [.tags/linux, tags]
 
 check/deployed-native/linux/2.7:
   extends:
@@ -288,13 +269,6 @@ check/deployed-native/macos/arm/2.7:
   script:
     - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=upstream $TANKER_PROFILES
     - poetry run python run-ci.py --isolate-conan-user-home build --test
-
-check/downstream/linux/2.6:
-  extends:
-    - .profiles/linux/2.6
-    - .check/downstream
-    - .rules/check/downstream/linux
-  tags: !reference [.tags/linux, tags]
 
 check/downstream/linux/2.7:
   extends:
@@ -346,7 +320,7 @@ deploy:
     - prepare/macos/x86_64
     - prepare/macos/arm
   variables:
-    RBENV_VERSION: 2.6.9
+    RBENV_VERSION: 3.1.1
   release:
     description: sdk-ruby v$SDK_RUBY_RELEASE_VERSION
     tag_name: v$SDK_RUBY_RELEASE_VERSION
