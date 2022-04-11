@@ -139,6 +139,19 @@ RSpec.describe Tanker do
     bob.free
   end
 
+  it 'raises when passing nil element to share_with_users' do
+    alice = Tanker::Core.new @options
+    alice.start_anonymous @app.create_identity
+    bob_identity = @app.create_identity
+    plaintext = 'Oi Oi Oi!'
+    encryption_options = Tanker::EncryptionOptions.new(share_with_users: [nil, bob_identity])
+    expect { alice.encrypt_utf8 plaintext, encryption_options }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+    end
+  end
+
   it 'has a correct device list' do
     tanker = Tanker::Core.new @options
     tanker.start_anonymous @app.create_identity

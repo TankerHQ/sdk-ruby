@@ -122,4 +122,38 @@ RSpec.describe "#{Tanker} Groups" do
       expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
     end
   end
+
+  it 'raises when update_group_member contains nil' do
+    members = [@alice_pub_ident, @bob_pub_ident]
+    group_id = @alice.create_group members
+
+    expect { @alice.update_group_members group_id, users_to_add: [nil] }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+    end
+  end
+
+  it 'raises when passing nil to group members list creation' do
+    members = [@alice_pub_ident, nil]
+
+    expect { @alice.create_group members }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+    end
+  end
+
+  it 'raises when passing nil inside share_with_groups' do
+    members = [@alice_pub_ident]
+    group_id = @alice.create_group members
+
+    plaintext = 'Lemurs and other quadrupeds'
+    encryption_options = Tanker::EncryptionOptions.new(share_with_groups: [group_id, nil])
+    expect { @alice.encrypt_utf8 plaintext, encryption_options }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+    end
+  end
 end
