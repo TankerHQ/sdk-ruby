@@ -15,7 +15,16 @@ workflow:
     - if: !reference [.if-invalid-native-conan-reference, if]
       when: never
     # allow everything else
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      variables:
+        CONAN_REMOTE: "artifactory"
+    - if: '$CI_MERGE_REQUEST_TITLE =~ /.*\[preview].*/'
+      variables:
+        CONAN_REMOTE: "artifactory-preview"
     - when: always
+      variables:
+        CONAN_REMOTE: "artifactory-staging"
+
 
 ###########
 # Default #
@@ -107,31 +116,31 @@ lint:
 .profiles/linux/2.7:
   variables:
     RBENV_VERSION: 2.7.5
-    TANKER_PROFILES: --profile linux-release-shared-no-http-backend
+    TANKER_PROFILES: --profile linux-x86_64 shared no-fetchpp
 
 .profiles/linux/3.0:
   variables:
     RBENV_VERSION: 3.0.3
-    TANKER_PROFILES: --profile linux-release-shared-no-http-backend
+    TANKER_PROFILES: --profile linux-x86_64 shared no-fetchpp
 
 .profiles/linux/3.1:
   variables:
     RBENV_VERSION: 3.1.1
-    TANKER_PROFILES: --profile linux-release-shared-no-http-backend
+    TANKER_PROFILES: --profile linux-x86_64 shared no-fetchpp
 
 .profiles/macos/x86_64/2.7:
   extends:
     - .tags/macos/x86_64
   variables:
     RBENV_VERSION: 2.7.1
-    TANKER_PROFILES: --profile macos-x86_64-release-shared-no-http-backend
+    TANKER_PROFILES: --profile macos-x86_64 shared no-fetchpp
 
 .profiles/macos/arm/2.7:
   extends:
     - .tags/macos/arm
   variables:
     RBENV_VERSION: 2.7.3
-    TANKER_PROFILES: --profile macos-armv8-release-shared-no-http-backend
+    TANKER_PROFILES: --profile macos-armv8 shared no-fetchpp
 
 #################
 # prepare stage #
@@ -150,7 +159,7 @@ lint:
     - .rules/prepare
     - .release-artifacts
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE $TANKER_PROFILES
+    - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE prepare --use-tanker=deployed --tanker-ref $SDK_NATIVE_LATEST_CONAN_REFERENCE $TANKER_PROFILES
 
 prepare/linux:
   extends:
@@ -179,8 +188,8 @@ prepare/macos/arm:
     - .before-script/rbenv-path
   dependencies: []
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=same-as-branch $TANKER_PROFILES
-    - poetry run python run-ci.py --isolate-conan-user-home build --test
+    - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE prepare --use-tanker=same-as-branch $TANKER_PROFILES
+    - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE build --test
 
 check/native-from-sources/linux/2.7:
   extends:
@@ -221,7 +230,7 @@ check/native-from-sources/macos/arm/2.7:
     - .before-script/rbenv-path
     - .rules/check/deployed-native
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home build --test
+    - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE build --test
 
 check/deployed-native/linux/2.7:
   extends:
@@ -267,8 +276,8 @@ check/deployed-native/macos/arm/2.7:
     - .before-script/rbenv-path-download-artifacts
   dependencies: []
   script:
-    - poetry run python run-ci.py --isolate-conan-user-home prepare --use-tanker=upstream $TANKER_PROFILES
-    - poetry run python run-ci.py --isolate-conan-user-home build --test
+    - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE prepare --use-tanker=upstream $TANKER_PROFILES
+    - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE build --test
 
 check/downstream/linux/2.7:
   extends:

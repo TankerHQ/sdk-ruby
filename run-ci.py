@@ -2,6 +2,7 @@ from typing import Optional
 import argparse
 import os
 from pathlib import Path
+import platform
 import sys
 
 
@@ -10,12 +11,12 @@ import tankerci.bump
 import tankerci.conan
 import tankerci.git
 import tankerci.gitlab
-from tankerci.conan import TankerSource
+from tankerci.conan import TankerSource, Profile
 
 
 def prepare(
     tanker_source: TankerSource,
-    profile: str,
+    host_profile: Profile,
     update: bool,
     tanker_ref: Optional[str],
 ) -> None:
@@ -25,7 +26,8 @@ def prepare(
     tankerci.conan.install_tanker_source(
         tanker_source,
         output_path=Path.cwd() / "conan",
-        profiles=[profile],
+        host_profiles=[host_profile],
+        build_profile=tankerci.conan.get_build_profile(),
         tanker_deployed_ref=tanker_deployed_ref,
     )
     tankerci.run("bundle", "install")
@@ -87,6 +89,7 @@ def main() -> None:
         dest="home_isolation",
         default=False,
     )
+    parser.add_argument("--remote", default="artifactory")
 
     subparsers = parser.add_subparsers(title="subcommands", dest="command")
 
@@ -100,7 +103,7 @@ def main() -> None:
         default=TankerSource.EDITABLE,
         dest="tanker_source",
     )
-    prepare_parser.add_argument("--profile", default="default")
+    prepare_parser.add_argument("--profile", dest="profiles", nargs="+", type=str, required=True)
     prepare_parser.add_argument("--tanker-ref")
     prepare_parser.add_argument(
         "--update",
@@ -124,9 +127,10 @@ def main() -> None:
     args = parser.parse_args()
     command = args.command
 
+    user_home = None
+
     if args.home_isolation:
-        tankerci.conan.set_home_isolation()
-        tankerci.conan.update_config()
+        user_home = Path.cwd() / ".cache" / "conan" / args.remote
         if command == "prepare":
             # Because of GitLab issue https://gitlab.com/gitlab-org/gitlab/-/issues/254323
             # the downstream deploy jobs will be triggered even if upstream has failed
@@ -134,17 +138,25 @@ def main() -> None:
             # previously built (and potentially broken) release candidate to deploy a binding
             tankerci.conan.run("remove", "tanker/*", "--force")
 
+    ctx = tankerci.conan.ConanContextManager(
+        [args.remote],
+        conan_home=user_home,
+    )
     if command == "build":
-        build(args.test)
+        with ctx:
+            build(args.test)
     elif command == "prepare":
-        prepare(
-            args.tanker_source,
-            args.profile,
-            args.update,
-            args.tanker_ref,
-        )
+        profiles = Profile(args.profiles)
+        with ctx:
+            prepare(
+                args.tanker_source,
+                profiles,
+                args.update,
+                args.tanker_ref,
+            )
     elif command == "deploy":
-        deploy(args.version)
+        with ctx:
+            deploy(args.version)
     elif command == "lint":
         lint()
     elif command == "reset-branch":
