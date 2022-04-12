@@ -65,6 +65,31 @@ RSpec.describe "#{Tanker} Encryption Sessions" do
     expect(@bob.decrypt_utf8(encrypted)).to eq(plaintext)
   end
 
+  it 'raises when passing nil element to share_with_users' do
+    result = expect do
+      @alice.create_encryption_session Tanker::EncryptionOptions.new(share_with_users: [@bob_pub_ident,
+                                                                                        nil])
+    end
+    result.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+    end
+  end
+
+  it 'raises when passing nil element to share_with_groups' do
+    group_id = @alice.create_group [@bob_pub_ident]
+    result = expect do
+      @alice.create_encryption_session Tanker::EncryptionOptions.new(share_with_groups: [group_id,
+                                                                                         nil])
+    end
+    result.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+    end
+  end
+
   it 'can use an encryption session without sharing with self' do
     plaintext = 'La Pléiade'
     sess = @alice.create_encryption_session(

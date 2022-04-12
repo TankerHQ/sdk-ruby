@@ -161,6 +161,53 @@ RSpec.describe "#{Tanker} streams" do
     bob.free
   end
 
+  it 'raises when passing nil element to share_with_users' do
+    alice_identity = @app.create_identity
+    alice_public_identity = Tanker::Identity.get_public_identity alice_identity
+    bob = Tanker::Core.new @options
+    bob_identity = @app.create_identity
+    bob.start_anonymous bob_identity
+
+    plaintext = 'Memory *is* RAM!'
+    in_stream = StringIO.new(plaintext)
+
+    result = expect do
+      @tanker.encrypt_stream(in_stream,
+                             Tanker::EncryptionOptions.new(share_with_users: [alice_public_identity, nil]))
+    end
+    result.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+    end
+
+    bob.free
+  end
+
+  it 'raises when passing nil element to share_with_groups' do
+    bob = Tanker::Core.new @options
+    bob_identity = @app.create_identity
+    bob_public_identity = Tanker::Identity.get_public_identity bob_identity
+    bob.start_anonymous bob_identity
+    group_id = bob.create_group [bob_public_identity]
+
+    plaintext = 'Memory *is* RAM!'
+    in_stream = StringIO.new(plaintext)
+
+    result = expect do
+      @tanker.encrypt_stream(in_stream,
+                             Tanker::EncryptionOptions.new(share_with_groups: [group_id, nil]))
+    end
+
+    result.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+    end
+
+    bob.free
+  end
+
   it 'throws the same errors as the inner stream' do
     plaintext = 'cat /dev/zero'
     in_stream = BrokenStringIO.new(plaintext)
