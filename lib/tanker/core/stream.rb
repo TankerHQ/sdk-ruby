@@ -166,7 +166,7 @@ module Tanker
         buffer.put_bytes(0, rbbuf)
         CTanker.tanker_stream_read_operation_finish(operation, rbbuf.size)
       end
-    rescue StandardError => e
+    rescue Exception => e # rubocop:disable Lint/RescueException I do want to rescue all exceptions
       @mutex.synchronize do
         return if @closed
 
@@ -227,7 +227,7 @@ module Tanker
 
           @write.write(ffibuf.read_string(nb_read))
         end
-      rescue StandardError => e
+      rescue Exception => e # rubocop:disable Lint/RescueException I do want to rescue all exceptions
         @error = @substream.error || e
       ensure
         @write.close
