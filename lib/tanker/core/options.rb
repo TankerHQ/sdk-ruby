@@ -2,7 +2,8 @@
 
 require 'ffi'
 require 'tanker/c_tanker/c_string'
-require 'tanker/c_tanker/c_backends'
+require 'tanker/c_tanker/c_datastore'
+require 'tanker/c_tanker/c_http'
 
 module Tanker
   # Options that can be given when opening a Tanker session
