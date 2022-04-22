@@ -89,6 +89,8 @@ module Tanker
 
     blocking_attach_function :tanker_set_log_handler, [:log_handler_callback], :void
 
+    blocking_attach_function :tanker_http_handle_response, [CHttpRequest, CHttpResponse], :void
+
     blocking_attach_function :tanker_prehash_password, [:string], CFuture
 
     blocking_attach_function :tanker_free_buffer, [:pointer], :void
