@@ -280,4 +280,59 @@ RSpec.describe Tanker do
     # back ruby because the ffi thread that runs the callbacks will already have
     # stopped. This test will make sure we don't have such a deadlock.
   end
+
+  # Note that these are the tests we do in other bindings, but since Ruby
+  # doesn't have an asynchronous HTTP library, the whole operation is done
+  # asynchronously (in a thread pool). This means that even the error in this
+  # test will be asynchronous. There is no way to trigger a sychronous error
+  # with the current code. The test won't hurt, so I kept it.
+  it 'reports synchronous http errors correctly' do
+    # This error should be reported before any network call
+    bad_options = Tanker::Core::Options.new app_id: @app.id, url: 'this is not an url at all',
+                                            sdk_type: 'sdk-ruby-test',
+                                            persistent_path: ':memory:', cache_path: ':memory:'
+    tanker = Tanker::Core.new bad_options
+    identity = @app.create_identity
+    expect { tanker.start(identity) }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error::NetworkError)
+      expect(e.code).to eq(Tanker::Error::NETWORK_ERROR)
+    end
+  end
+
+  it 'reports asynchronous http errors correctly' do
+    # This error requires an (async) DNS lookup
+    bad_options = Tanker::Core::Options.new app_id: @app.id, url: 'https://this-is-not-a-tanker-server.com',
+                                            sdk_type: 'sdk-ruby-test',
+                                            persistent_path: ':memory:', cache_path: ':memory:'
+    tanker = Tanker::Core.new bad_options
+    identity = @app.create_identity
+    expect { tanker.start(identity) }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error::NetworkError)
+      expect(e.code).to eq(Tanker::Error::NETWORK_ERROR)
+    end
+  end
+
+  it 'can stop tanker while a call is in flight' do
+    tanker = Tanker::Core.new @options
+    identity = @app.create_identity
+    tanker.start(identity)
+    tanker.register_identity(Tanker::PassphraseVerification.new('pass'))
+
+    ready = false
+
+    # Start an encrypt asynchronously and stop tanker
+    thread = Thread.new do
+      ready = true
+      tanker.encrypt_utf8 'plain text'
+    rescue StandardError => e
+      expect(e).to be_a(Tanker::Error::OperationCanceled)
+      expect(e.code).to eq(Tanker::Error::OPERATION_CANCELED)
+    end
+
+    until ready
+    end
+
+    tanker.stop
+    thread.join
+  end
 end
