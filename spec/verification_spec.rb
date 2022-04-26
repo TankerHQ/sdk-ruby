@@ -176,7 +176,7 @@ RSpec.describe "#{Tanker} Verification" do
     tanker1 = Tanker::Core.new @options
     nonce = tanker1.create_oidc_nonce
     tanker1.start martine_identity
-    tanker1._oidc_test_nonce = nonce
+    tanker1.oidc_test_nonce = nonce
     tanker1.register_identity Tanker::OIDCIDTokenVerification.new(oidc_token)
     tanker1.free
 
@@ -184,7 +184,7 @@ RSpec.describe "#{Tanker} Verification" do
     nonce = tanker2.create_oidc_nonce
     tanker2.start martine_identity
     expect(tanker2.status).to eq(Tanker::Status::IDENTITY_VERIFICATION_NEEDED)
-    tanker2._oidc_test_nonce = nonce
+    tanker2.oidc_test_nonce = nonce
     tanker2.verify_identity Tanker::OIDCIDTokenVerification.new(oidc_token)
     expect(tanker2.status).to eq(Tanker::Status::READY)
 
