@@ -76,7 +76,7 @@ module Tanker
       CTanker.tanker_create_oidc_nonce(@ctanker).get_string
     end
 
-    def _oidc_test_nonce=(nonce)
+    def oidc_test_nonce=(nonce)
       CTanker.tanker_set_oidc_test_nonce(@ctanker, nonce).get
     end
 
