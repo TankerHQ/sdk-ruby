@@ -116,14 +116,13 @@ module Tanker
       end
 
       def process_request(request)
-        fresponse = Faraday.send request.method, request.url do |freq|
-          freq.body = request.body
+        fresponse = Faraday.run_request(request.method, request.url, request.body, {
+          'X-Tanker-SdkType' => @sdk_type,
+          'X-Tanker-SdkVersion' => @sdk_version,
+          'Authorization' => request.authorization,
+          'X-Tanker-Instanceid' => request.instance_id
+        }.compact)
 
-          freq.headers['X-Tanker-SdkType'] = @sdk_type
-          freq.headers['X-Tanker-SdkVersion'] = @sdk_version
-          freq.headers['Authorization'] = request.authorization if request.authorization
-          freq.headers['X-Tanker-Instanceid'] = request.instance_id if request.instance_id
-        end
         request.complete_if_not_canceled do
           cresponse = CTanker::CHttpResponse.new_ok status_code: fresponse.status,
                                                     content_type: fresponse.headers['content-type'],
@@ -132,7 +131,7 @@ module Tanker
         end
       rescue Exception => e # rubocop:disable Lint/RescueException I do want to rescue all exceptions
         # NOTE: when debugging, you might want to uncomment this to print a full backtrace
-        # puts "HTTP request error:\n#{exception.full_message}"
+        # puts "HTTP request error:\n#{e.full_message}"
         cresponse = CTanker::CHttpResponse.new_error e.message
         CTanker.tanker_http_handle_response(request.crequest, cresponse)
       end
