@@ -28,9 +28,9 @@ module Tanker
       decrypted_size = CTanker.tanker_decrypted_size(inbuf, data.bytesize).get.address
       outbuf = FFI::MemoryPointer.new(:char, decrypted_size)
 
-      CTanker.tanker_decrypt(@ctanker, outbuf, inbuf, data.bytesize).get
+      clear_size = CTanker.tanker_decrypt(@ctanker, outbuf, inbuf, data.bytesize).get.address
 
-      outbuf.read_string decrypted_size
+      outbuf.read_string clear_size
     end
 
     def decrypt_utf8(data)

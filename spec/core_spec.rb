@@ -74,6 +74,19 @@ RSpec.describe Tanker do
     tanker.free
   end
 
+  it 'can encrypt and decrypt an empty message' do
+    tanker = Tanker::Core.new @options
+    tanker.start_anonymous @app.create_identity
+
+    plaintext = ''
+    ciphertext = tanker.encrypt_utf8 plaintext
+
+    decrypted = tanker.decrypt_utf8 ciphertext
+    expect(decrypted).to eq(plaintext)
+
+    tanker.free
+  end
+
   it 'can encrypt, share, and decrypt between two users' do
     alice = Tanker::Core.new @options
     alice.start_anonymous @app.create_identity
