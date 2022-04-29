@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'ffi'
-require_relative 'c_tanker/init'
 require_relative 'core/options'
 require_relative 'sharing_options'
 require_relative 'encryption_options'
@@ -13,8 +12,19 @@ require_relative 'c_tanker/c_verification_method'
 require_relative 'c_tanker/c_log_record'
 require_relative 'c_tanker/c_device_info'
 
+module FFI::Library
+  # Marking a function blocking releases the global Ruby lock.
+  # This is required for every function that could invoke a callback (including log handler) in another thread
+  def blocking_attach_function(func, args, returns = nil)
+    attach_function func, args, returns, blocking: true
+  end
+end
+
 module Tanker
   module CTanker
+    extend FFI::Library
+    ffi_lib get_path('ctanker')
+
     typedef :pointer, :session_pointer
     typedef :pointer, :enc_sess_pointer
     typedef :pointer, :stream_pointer
