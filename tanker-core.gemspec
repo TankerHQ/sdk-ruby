@@ -43,4 +43,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop', '~> 1.13'
   spec.add_development_dependency 'rubygems-tasks', '~> 0.2.5'
   spec.add_development_dependency 'tanker-identity', '~> 0.1'
+  spec.metadata['rubygems_mfa_required'] = 'true'
 end
