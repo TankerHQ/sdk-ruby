@@ -4,21 +4,21 @@ module Tanker
   class Admin
     # Information from the Admin SDK concerning a Tanker application
     class App
-      attr_reader :url, :id, :auth_token, :private_key
+      attr_reader :admin, :id, :auth_token, :secret
 
-      def initialize(trustchain_url:, id:, auth_token:, private_key:)
-        @trustchain_url = trustchain_url
+      def initialize(admin:, id:, auth_token:, secret:)
+        @admin = admin
         @id = id
         @auth_token = auth_token
-        @private_key = private_key
+        @secret = secret
       end
 
       def get_email_verification_code(email)
-        CAdmin.tanker_get_email_verification_code(@trustchain_url, @id, @auth_token, email).get_string
+        @admin.get_email_verification_code(@id, @auth_token, email)
       end
 
       def get_sms_verification_code(phone_number)
-        CAdmin.tanker_get_sms_verification_code(@trustchain_url, @id, @auth_token, phone_number).get_string
+        @admin.get_sms_verification_code(@id, @auth_token, phone_number)
       end
     end
   end
