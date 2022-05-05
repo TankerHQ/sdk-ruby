@@ -41,7 +41,7 @@ module Tanker
 
       method_base_addr = method_list_ptr.read_pointer
       method_list = count.times.map do |i|
-        method_ptr = method_base_addr + i * CTanker::CVerificationMethod.size
+        method_ptr = method_base_addr + (i * CTanker::CVerificationMethod.size)
         CTanker::CVerificationMethod.new(method_ptr).to_verification_method
       end
       CTanker.tanker_free_verification_method_list method_list_ptr
@@ -58,7 +58,7 @@ module Tanker
 
       method_base_addr = device_list_ptr.read_pointer
       device_info_list = count.times.map do |i|
-        method_ptr = method_base_addr + i * CTanker::CDeviceInfo.size
+        method_ptr = method_base_addr + (i * CTanker::CDeviceInfo.size)
         CTanker::CDeviceInfo.new(method_ptr)
       end
       CTanker.tanker_free_device_list device_list_ptr
