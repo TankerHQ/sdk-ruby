@@ -2,7 +2,7 @@
 
 require 'singleton'
 require 'securerandom'
-require 'tanker/admin'
+require 'admin'
 require 'tanker/identity'
 
 class OIDCConfig
