@@ -92,9 +92,12 @@ module Tanker
     class Client
       attr_reader :tanker_http_options
 
-      def initialize(sdk_type, sdk_version)
+      def initialize(sdk_type, sdk_version, faraday_adapter)
         @sdk_type = sdk_type
         @sdk_version = sdk_version
+        @conn = Faraday.new do |conn|
+          conn.adapter faraday_adapter || Faraday.default_adapter
+        end
 
         # This could be a proc, but for some reason, ffi gives the wrong type
         # for crequest if we don't specify it explicitly here
@@ -120,7 +123,9 @@ module Tanker
           'X-Tanker-SdkType' => @sdk_type,
           'X-Tanker-SdkVersion' => @sdk_version,
           'Authorization' => request.authorization,
-          'X-Tanker-Instanceid' => request.instance_id
+          'X-Tanker-Instanceid' => request.instance_id,
+          # net-http really wants a Content-Type
+          'Content-Type' => 'application/data'
         }.compact)
 
         request.complete_if_not_canceled do

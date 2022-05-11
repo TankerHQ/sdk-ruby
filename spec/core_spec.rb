@@ -325,6 +325,24 @@ RSpec.describe Tanker do
     end
   end
 
+  it 'can override the faraday adapter' do
+    options = Tanker::Core::Options.new app_id: @app.id, url: @app.url,
+                                        sdk_type: 'sdk-ruby-test',
+                                        persistent_path: ':memory:', cache_path: ':memory:',
+                                        faraday_adapter: :net_http_persistent
+    tanker = Tanker::Core.new options
+    identity = @app.create_identity
+    status = tanker.start(identity)
+    expect(status).to be(Tanker::Status::IDENTITY_REGISTRATION_NEEDED)
+
+    tanker.register_identity(Tanker::PassphraseVerification.new('pass'))
+    expect(tanker.status).to be(Tanker::Status::READY)
+
+    tanker.stop
+    expect(tanker.status).to be(Tanker::Status::STOPPED)
+    tanker.free
+  end
+
   it 'can stop tanker while a call is in flight' do
     tanker = Tanker::Core.new @options
     identity = @app.create_identity

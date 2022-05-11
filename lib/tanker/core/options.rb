@@ -22,8 +22,9 @@ module Tanker
     SDK_VERSION = CTanker.new_cstring Core::VERSION
 
     attr_reader :sdk_type
+    attr_reader :faraday_adapter
 
-    def initialize(app_id:, url: nil, sdk_type: SDK_TYPE, persistent_path: nil, cache_path: nil)
+    def initialize(app_id:, url: nil, sdk_type: SDK_TYPE, persistent_path: nil, cache_path: nil, faraday_adapter: nil) # rubocop:disable Metrics/ParameterLists
       super()
 
       # NOTE: Instance variables are required to keep the CStrings alive
@@ -33,6 +34,7 @@ module Tanker
       @c_cache_path = CTanker.new_cstring cache_path
       @sdk_type = sdk_type
       @c_sdk_type = CTanker.new_cstring sdk_type
+      @faraday_adapter = faraday_adapter
 
       self[:version] = 4
       self[:app_id] = @c_app_id
