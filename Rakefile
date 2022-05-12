@@ -24,7 +24,8 @@ def define_copy_tanker
 
   deps_info = JSON.parse File.read(build_infos[0])
   tankerdep = deps_info['dependencies'].detect { |d| d['name'] == 'tanker' }
-  libs = tankerdep['libs']
+  # we only need ctanker
+  libs = ['ctanker']
   dest = "vendor/tanker/#{vendor_arch}"
   desc 'create vendor directory'
   file dest do
