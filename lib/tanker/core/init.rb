@@ -31,6 +31,9 @@ module Tanker
       # Do not spam the console of our users.
       self.class.set_log_handler { |_| } unless self.class.test_and_set_log_handler == 1 # rubocop:disable Lint/EmptyBlock
 
+      @http_client = Http::Client.new options.sdk_type, VERSION, options.faraday_adapter
+      options[:http_options] = @http_client.tanker_http_options
+
       @ctanker = CTanker.tanker_create(options).get
       @freed = false
       ctanker_addr = @ctanker.address

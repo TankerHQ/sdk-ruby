@@ -2,7 +2,7 @@
 
 require 'singleton'
 require 'securerandom'
-require 'tanker/admin'
+require 'admin'
 require 'tanker/identity'
 
 class OIDCConfig
@@ -29,7 +29,7 @@ class AppConfig
   attr_reader :trustchain_url
 
   def self.safe_get_env(var)
-    val = ENV[var]
+    val = ENV.fetch(var, nil)
     return val unless val.nil?
 
     raise "Env var #{var} is not defined, failed to get the Tanker test configuration!"
@@ -65,14 +65,13 @@ module Tanker
 
     def initialize
       config = AppConfig.instance
-      @admin = Admin.new(
+      @admin = Admin::Client.new(
         app_management_token: config.app_management_token,
         app_management_url: config.app_management_url,
         api_url: config.api_url,
         environment_name: config.environment_name,
         trustchain_url: config.trustchain_url
       )
-      @admin.connect
       @app = @admin.create_app('ruby-test')
     end
 
@@ -105,7 +104,7 @@ module Tanker
     end
 
     def create_identity(user_id = SecureRandom.uuid)
-      Identity.create_identity @app.id, @app.private_key, user_id
+      Identity.create_identity @app.id, @app.secret, user_id
     end
 
     def use_oidc_config(client_id, client_provider)
