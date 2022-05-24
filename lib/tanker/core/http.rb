@@ -68,6 +68,17 @@ module Tanker
 
     module ThreadPool
       THREAD_POOL_SIZE = 4
+      @queue = nil
+
+      def self.init
+        # Queue is a concurrent queue in Ruby
+        @queue = Queue.new
+        @http_thread_pool = THREAD_POOL_SIZE.times do
+          Thread.new do
+            thread_loop
+          end
+        end
+      end
 
       def self.thread_loop
         loop do
@@ -77,15 +88,8 @@ module Tanker
       end
 
       def self.push(proc)
+        init if @queue.nil?
         @queue << proc
-      end
-
-      # Queue is a concurrent queue in Ruby
-      @queue = Queue.new
-      @http_thread_pool = THREAD_POOL_SIZE.times do
-        Thread.new do
-          thread_loop
-        end
       end
     end
 
