@@ -93,4 +93,16 @@ module Tanker
       @preverified_phone_number = preverified_phone_number
     end
   end
+
+  class E2ePassphraseVerification < Verification
+    attr_reader :e2e_passphrase
+
+    def initialize(e2e_passphrase)
+      super()
+
+      ASSERT_UTF8.call(e2e_passphrase)
+
+      @e2e_passphrase = e2e_passphrase
+    end
+  end
 end
