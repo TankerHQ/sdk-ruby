@@ -451,4 +451,105 @@ RSpec.describe "#{Tanker} Verification" do
       tanker2.free
     end
   end
+
+  describe 'e2e passphrase' do
+    it 'can register an e2e passphrase' do
+      passphrase = Tanker::E2ePassphraseVerification.new 'The Cost of Legacy'
+      tanker = Tanker::Core.new @options
+      tanker.start @identity
+      tanker.register_identity passphrase
+      methods = tanker.get_verification_methods
+      tanker.free
+      expect(methods).to eq [Tanker::E2ePassphraseVerificationMethod.new]
+
+      tanker2 = Tanker::Core.new @options
+      tanker2.start @identity
+      tanker2.verify_identity passphrase
+      expect(tanker2.status).to eq(Tanker::Status::READY)
+      tanker2.free
+    end
+  end
+
+  it 'can update an e2e passphrase' do
+    old_passphrase = Tanker::E2ePassphraseVerification.new 'brady'
+    new_passphrase = Tanker::E2ePassphraseVerification.new 'tachy'
+    tanker = Tanker::Core.new @options
+    tanker.start @identity
+    tanker.register_identity old_passphrase
+    tanker.set_verification_method new_passphrase
+    tanker.free
+
+    tanker2 = Tanker::Core.new @options
+    tanker2.start @identity
+    expect { tanker2.verify_identity old_passphrase }
+      .to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidVerification)
+      expect(e.code).to eq(Tanker::Error::INVALID_VERIFICATION)
+    end
+    tanker2.verify_identity new_passphrase
+    expect(tanker2.status).to eq(Tanker::Status::READY)
+    tanker2.free
+  end
+
+  it 'can switch to an e2e passphrase' do
+    old_passphrase = Tanker::PassphraseVerification.new 'brady'
+    new_passphrase = Tanker::E2ePassphraseVerification.new 'tachy'
+    tanker = Tanker::Core.new @options
+    tanker.start @identity
+    options = Tanker::VerificationOptions.new(allow_e2e_method_switch: true)
+    tanker.register_identity old_passphrase
+    tanker.set_verification_method(new_passphrase, options)
+    tanker.free
+
+    tanker2 = Tanker::Core.new @options
+    tanker2.start @identity
+    expect { tanker2.verify_identity old_passphrase }
+      .to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::PreconditionFailed)
+      expect(e.code).to eq(Tanker::Error::PRECONDITION_FAILED)
+    end
+    tanker2.verify_identity new_passphrase
+    expect(tanker2.status).to eq(Tanker::Status::READY)
+    tanker2.free
+  end
+
+  it 'can switch from an e2e passphrase' do
+    old_passphrase = Tanker::E2ePassphraseVerification.new 'brady'
+    new_passphrase = Tanker::PassphraseVerification.new 'tachy'
+    tanker = Tanker::Core.new @options
+    tanker.start @identity
+    options = Tanker::VerificationOptions.new(allow_e2e_method_switch: true)
+    tanker.register_identity old_passphrase
+    tanker.set_verification_method(new_passphrase, options)
+    tanker.free
+
+    tanker2 = Tanker::Core.new @options
+    tanker2.start @identity
+    expect { tanker2.verify_identity old_passphrase }
+      .to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::PreconditionFailed)
+      expect(e.code).to eq(Tanker::Error::PRECONDITION_FAILED)
+    end
+    tanker2.verify_identity new_passphrase
+    expect(tanker2.status).to eq(Tanker::Status::READY)
+    tanker2.free
+  end
+
+  it 'cannot switch to an e2e passphrase without allow_e2e_method_switch flag' do
+    old_passphrase = Tanker::PassphraseVerification.new 'brady'
+    new_passphrase = Tanker::E2ePassphraseVerification.new 'tachy'
+    tanker = Tanker::Core.new @options
+    tanker.start @identity
+    tanker.register_identity old_passphrase
+    expect { tanker.set_verification_method new_passphrase }
+      .to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+    end
+    tanker.free
+  end
 end
