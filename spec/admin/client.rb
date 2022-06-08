@@ -20,12 +20,18 @@ module Tanker
         conn
       end
 
-      def initialize(app_management_token:, app_management_url:, api_url:, environment_name:, trustchain_url:)
+      def initialize(app_management_token:, # rubocop:disable Metrics/ParameterLists
+                     app_management_url:,
+                     api_url:,
+                     environment_name:,
+                     trustchain_url:,
+                     verification_api_token:)
         @app_management_token = app_management_token
         @app_management_url = app_management_url
         @api_url = api_url
         @environment_name = environment_name
         @trustchain_url = trustchain_url
+        @verification_api_token = verification_api_token
         @conn = Faraday.new(url: "#{@app_management_url}/v1/apps") do |conn|
           conn.request :authorization, 'Bearer', @app_management_token
           self.class.init_conn(conn)
@@ -40,7 +46,6 @@ module Tanker
         App.new(
           admin: self,
           id: response.body['app']['id'],
-          auth_token: response.body['app']['auth_token'],
           secret: response.body['app']['secret']
         )
       end
@@ -58,20 +63,21 @@ module Tanker
         response.body
       end
 
-      def get_email_verification_code(app_id, auth_token, email)
+      def get_email_verification_code(app_id, email)
         conn = Faraday.new(url: @api_url) do |f|
           self.class.init_conn(f)
         end
-        response = conn.post('/verification/email/code', { email: email, app_id: app_id, auth_token: auth_token })
+        response = conn.post('/verification/email/code',
+                             { email: email, app_id: app_id, auth_token: @verification_api_token })
         response.body['verification_code']
       end
 
-      def get_sms_verification_code(app_id, auth_token, phone_number)
+      def get_sms_verification_code(app_id, phone_number)
         conn = Faraday.new(url: @api_url) do |f|
           self.class.init_conn(f)
         end
         response = conn.post('/verification/sms/code',
-                             { phone_number: phone_number, app_id: app_id, auth_token: auth_token })
+                             { phone_number: phone_number, app_id: app_id, auth_token: @verification_api_token })
         response.body['verification_code']
       end
     end

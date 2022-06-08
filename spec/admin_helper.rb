@@ -27,6 +27,7 @@ class AppConfig
   attr_reader :environment_name
   attr_reader :oidc_config
   attr_reader :trustchain_url
+  attr_reader :verification_api_token
 
   def self.safe_get_env(var)
     val = ENV.fetch(var, nil)
@@ -41,6 +42,7 @@ class AppConfig
     @api_url = AppConfig.safe_get_env 'TANKER_APPD_URL'
     @environment_name = AppConfig.safe_get_env 'TANKER_MANAGEMENT_API_DEFAULT_ENVIRONMENT_NAME'
     @trustchain_url = AppConfig.safe_get_env 'TANKER_TRUSTCHAIND_URL'
+    @verification_api_token = AppConfig.safe_get_env 'TANKER_VERIFICATION_API_TEST_TOKEN'
 
     client_id = AppConfig.safe_get_env 'TANKER_OIDC_CLIENT_ID'
     client_secret = AppConfig.safe_get_env 'TANKER_OIDC_CLIENT_SECRET'
@@ -70,7 +72,8 @@ module Tanker
         app_management_url: config.app_management_url,
         api_url: config.api_url,
         environment_name: config.environment_name,
-        trustchain_url: config.trustchain_url
+        trustchain_url: config.trustchain_url,
+        verification_api_token: config.verification_api_token
       )
       @app = @admin.create_app('ruby-test')
     end
