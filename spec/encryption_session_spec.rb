@@ -11,7 +11,7 @@ RSpec.describe "#{Tanker} Encryption Sessions" do
     @options = Tanker::Core::Options.new app_id: @app.id, url: @app.url,
                                          sdk_type: 'sdk-ruby-test', persistent_path: ':memory:', cache_path: ':memory:'
     @encryption_session_overhead = 57
-    @encryption_session_padded_overhead = @encryption_session_overhead+1
+    @encryption_session_padded_overhead = @encryption_session_overhead + 1
   end
 
   before(:each) do

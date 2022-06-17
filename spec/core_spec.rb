@@ -12,7 +12,7 @@ RSpec.describe Tanker do
     @options = Tanker::Core::Options.new app_id: @app.id, url: @app.url,
                                          sdk_type: 'sdk-ruby-test', persistent_path: ':memory:', cache_path: ':memory:'
     @simple_encryption_overhead = 17
-    @simple_padded_encryption_overhead = @simple_encryption_overhead+1
+    @simple_padded_encryption_overhead = @simple_encryption_overhead + 1
   end
 
   after(:all) do
