@@ -18,6 +18,7 @@ module Tanker
       TYPE_PHONE_NUMBER = 5
       TYPE_PREVERIFIED_EMAIL = 6
       TYPE_PREVERIFIED_PHONE_NUMBER = 7
+      TYPE_E2E_PASSPHRASE = 8
 
       def to_verification_method # rubocop:disable Metrics/CyclomaticComplexity Not relevant for a case/when
         case self[:type]
@@ -35,6 +36,8 @@ module Tanker
           PreverifiedEmailVerificationMethod.new(self[:value].read_string.force_encoding(Encoding::UTF_8))
         when TYPE_PREVERIFIED_PHONE_NUMBER
           PreverifiedPhoneNumberVerificationMethod.new(self[:value].read_string.force_encoding(Encoding::UTF_8))
+        when TYPE_E2E_PASSPHRASE
+          E2ePassphraseVerificationMethod.new
         else
           raise "Unknown VerificationMethod type #{self[:type]}!"
         end

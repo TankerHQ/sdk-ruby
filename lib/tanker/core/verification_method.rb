@@ -64,4 +64,6 @@ module Tanker
       super && preverified_phone_number == other.preverified_phone_number
     end
   end
+
+  class E2ePassphraseVerificationMethod < VerificationMethod; end
 end
