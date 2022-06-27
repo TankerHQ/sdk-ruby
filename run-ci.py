@@ -1,17 +1,15 @@
-from typing import Optional
 import argparse
 import os
-from pathlib import Path
-import platform
 import sys
-
+from pathlib import Path
+from typing import Optional
 
 import tankerci
 import tankerci.bump
 import tankerci.conan
 import tankerci.git
 import tankerci.gitlab
-from tankerci.conan import TankerSource, Profile
+from tankerci.conan import Profile, TankerSource
 
 
 def prepare(
@@ -52,7 +50,6 @@ def set_credentials() -> None:
     credential_file = gem_folder / "credentials"
     credential_file.touch(mode=0o600)
     credential_file.write_text(f":rubygems_api_key: {api_key}")
-
 
 
 def deploy(version: str) -> None:
@@ -103,7 +100,9 @@ def main() -> None:
         default=TankerSource.EDITABLE,
         dest="tanker_source",
     )
-    prepare_parser.add_argument("--profile", dest="profiles", nargs="+", type=str, required=True)
+    prepare_parser.add_argument(
+        "--profile", dest="profiles", nargs="+", type=str, required=True
+    )
     prepare_parser.add_argument("--tanker-ref")
     prepare_parser.add_argument(
         "--update",
