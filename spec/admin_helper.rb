@@ -75,7 +75,7 @@ module Tanker
         trustchain_url: config.trustchain_url,
         verification_api_token: config.verification_api_token
       )
-      @app = @admin.create_app('ruby-test')
+      @app = @admin.create_app('sdk-ruby-tests')
     end
 
     def self.use_test_log_handler
