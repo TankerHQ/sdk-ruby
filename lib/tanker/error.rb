@@ -26,7 +26,7 @@ module Tanker
     TOO_MANY_ATTEMPTS = 9
     EXPIRED_VERIFICATION = 10
     IO_ERROR = 11
-    DEVICE_REVOKED = 12
+    # DEVICE_REVOKED = 12
     CONFLICT = 13
     UPGRADE_REQUIRED = 14
     IDENTITY_ALREADY_ATTACHED = 15
@@ -43,7 +43,6 @@ module Tanker
     class TooManyAttempts < self; end
     class ExpiredVerification < self; end
     class IOError < self; end
-    class DeviceRevoked < self; end
     class Conflict < self; end
     class UpgradeRequired < self; end
     class IdentityAlreadyAttached < self; end
@@ -61,7 +60,6 @@ module Tanker
         TOO_MANY_ATTEMPTS => TooManyAttempts,
         EXPIRED_VERIFICATION => ExpiredVerification,
         IO_ERROR => IOError,
-        DEVICE_REVOKED => DeviceRevoked,
         CONFLICT => Conflict,
         UPGRADE_REQUIRED => UpgradeRequired,
         IDENTITY_ALREADY_ATTACHED => IdentityAlreadyAttached

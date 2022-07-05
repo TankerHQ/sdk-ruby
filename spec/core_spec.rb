@@ -261,7 +261,6 @@ RSpec.describe Tanker do
     Gem::Deprecate.skip_during do
       devices = tanker.device_list
       expect(devices.length).to be 1
-      expect(devices[0].revoked?).to be false
       expect(devices[0].device_id).to eq tanker.device_id
     end
 
