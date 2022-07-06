@@ -48,12 +48,6 @@ module Tanker
       method_list
     end
 
-    def device_id
-      CTanker.tanker_device_id(@ctanker).get_string
-    end
-
-    deprecate :device_id, :none, 2022, 1
-
     def stop
       CTanker.tanker_stop(@ctanker).get
     end

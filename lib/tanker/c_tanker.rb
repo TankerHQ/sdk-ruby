@@ -10,7 +10,6 @@ require_relative 'c_tanker/c_future'
 require_relative 'c_tanker/c_verification'
 require_relative 'c_tanker/c_verification_method'
 require_relative 'c_tanker/c_log_record'
-require_relative 'c_tanker/c_device_info'
 
 module Tanker
   module CTanker
@@ -38,7 +37,6 @@ module Tanker
     blocking_attach_function :tanker_stop, [:session_pointer], CFuture
     blocking_attach_function :tanker_status, [:session_pointer], :uint32
     blocking_attach_function :tanker_generate_verification_key, [:session_pointer], CFuture
-    blocking_attach_function :tanker_device_id, [:session_pointer], CFuture
 
     blocking_attach_function :tanker_create_oidc_nonce, [:session_pointer], CFuture
     blocking_attach_function :tanker_set_oidc_test_nonce, [:session_pointer, :string], CFuture
