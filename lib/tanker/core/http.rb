@@ -138,6 +138,11 @@ module Tanker
                                                     body: fresponse.body
           CTanker.tanker_http_handle_response(request.crequest, cresponse)
         end
+      rescue Faraday::ConnectionFailed => e
+        # This can happen if Faraday is using a proxy, and it rejects the request
+        # If we get a 500 from the proxy, we want to differentiate this from a real server error
+        cresponse = CTanker::CHttpResponse.new_error "#{e.class}: #{e.message}"
+        CTanker.tanker_http_handle_response(request.crequest, cresponse)
       rescue Exception => e # rubocop:disable Lint/RescueException I do want to rescue all exceptions
         # NOTE: when debugging, you might want to uncomment this to print a full backtrace
         # puts "HTTP request error:\n#{e.full_message}"
