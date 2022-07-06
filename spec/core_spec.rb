@@ -254,19 +254,6 @@ RSpec.describe Tanker do
     end
   end
 
-  it 'has a correct device list' do
-    tanker = Tanker::Core.new @options
-    tanker.start_anonymous @app.create_identity
-
-    Gem::Deprecate.skip_during do
-      devices = tanker.device_list
-      expect(devices.length).to be 1
-      expect(devices[0].device_id).to eq tanker.device_id
-    end
-
-    tanker.free
-  end
-
   it 'fails to prehash_password the empty string' do
     expect { Tanker::Core.prehash_password '' }.to(raise_error) do |e|
       expect(e).to be_a(Tanker::Error)

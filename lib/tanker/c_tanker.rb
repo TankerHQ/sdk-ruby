@@ -39,7 +39,6 @@ module Tanker
     blocking_attach_function :tanker_status, [:session_pointer], :uint32
     blocking_attach_function :tanker_generate_verification_key, [:session_pointer], CFuture
     blocking_attach_function :tanker_device_id, [:session_pointer], CFuture
-    blocking_attach_function :tanker_get_device_list, [:session_pointer], CFuture
 
     blocking_attach_function :tanker_create_oidc_nonce, [:session_pointer], CFuture
     blocking_attach_function :tanker_set_oidc_test_nonce, [:session_pointer, :string], CFuture
@@ -94,7 +93,6 @@ module Tanker
 
     blocking_attach_function :tanker_free_buffer, [:pointer], :void
     blocking_attach_function :tanker_free_verification_method_list, [:pointer], :void
-    blocking_attach_function :tanker_free_device_list, [:pointer], :void
   end
 
   private_constant :CTanker
