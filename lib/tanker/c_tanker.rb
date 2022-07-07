@@ -47,7 +47,7 @@ module Tanker
     blocking_attach_function :tanker_attach_provisional_identity, [:session_pointer, :string], CFuture
     blocking_attach_function :tanker_verify_provisional_identity, [:session_pointer, CVerification], CFuture
 
-    blocking_attach_function :tanker_encrypted_size, [:uint64], :uint64
+    blocking_attach_function :tanker_encrypted_size, [:uint64, :uint32], :uint64
     blocking_attach_function :tanker_decrypted_size, [:pointer, :uint64], CFuture
     blocking_attach_function :tanker_get_resource_id, [:pointer, :uint64], CFuture
 
@@ -68,7 +68,7 @@ module Tanker
 
     blocking_attach_function :tanker_encryption_session_open, [:session_pointer, Tanker::EncryptionOptions], CFuture
     blocking_attach_function :tanker_encryption_session_close, [:enc_sess_pointer], CFuture
-    blocking_attach_function :tanker_encryption_session_encrypted_size, [:uint64], :uint64
+    blocking_attach_function :tanker_encryption_session_encrypted_size, [:enc_sess_pointer, :uint64], :uint64
     blocking_attach_function :tanker_encryption_session_get_resource_id, [:enc_sess_pointer], CFuture
     blocking_attach_function :tanker_encryption_session_encrypt, [:enc_sess_pointer, :pointer,
                                                                   :pointer, :uint64], CFuture
