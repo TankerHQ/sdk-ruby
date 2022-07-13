@@ -25,12 +25,12 @@ RSpec.describe "#{Tanker} Groups" do
   end
 
   after(:each) do
-    @alice.free
-    @bob.free
+    @alice&.free
+    @bob&.free
   end
 
   after(:all) do
-    @app.delete
+    @app&.delete
   end
 
   it 'cannot create an empty group' do

@@ -16,7 +16,7 @@ RSpec.describe Tanker do
   end
 
   after(:all) do
-    @app.delete
+    @app&.delete
   end
 
   it 'has a version number' do

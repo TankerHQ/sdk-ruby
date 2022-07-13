@@ -16,7 +16,7 @@ RSpec.describe "#{Tanker} Verification" do
   end
 
   after(:all) do
-    @app.delete
+    @app&.delete
   end
 
   it 'Can validate a new device using a verification key' do

@@ -51,9 +51,9 @@ RSpec.describe "#{Tanker} streams" do
   end
 
   after(:all) do
-    @tanker.free
+    @tanker&.free
 
-    @app.delete
+    @app&.delete
   end
 
   it 'can encrypt a stream and decrypt back' do
