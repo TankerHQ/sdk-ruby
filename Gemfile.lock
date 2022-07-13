@@ -65,7 +65,7 @@ GEM
     ruby-progressbar (1.11.0)
     rubygems-tasks (0.2.5)
       irb (~> 1.0)
-    tanker-identity (2.16.0)
+    tanker-identity (3.3.0)
       rbnacl (~> 7.0)
     thor (1.2.1)
     unicode-display_width (2.2.0)
@@ -84,7 +84,7 @@ DEPENDENCIES
   rubocop (~> 1.13)
   rubygems-tasks (~> 0.2.5)
   tanker-core!
-  tanker-identity (~> 2.16.0)
+  tanker-identity (~> 3.3.0)
 
 BUNDLED WITH
    2.3.13

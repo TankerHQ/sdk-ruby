@@ -296,7 +296,7 @@ RSpec.describe Tanker do
     alice.start_anonymous @app.create_identity
 
     bob_email = 'bob@tanker.io'
-    bob_provisional_identity = Tanker::Identity.create_provisional_identity(@app.id, bob_email)
+    bob_provisional_identity = Tanker::Identity.create_provisional_identity(@app.id, 'email', bob_email)
     bob_public_identity = Tanker::Identity.get_public_identity bob_provisional_identity
 
     encrypted = alice.encrypt_utf8 message, Tanker::EncryptionOptions.new(share_with_users: [bob_public_identity])
@@ -323,7 +323,7 @@ RSpec.describe Tanker do
     bob = Tanker::Core.new @options
     bob_identity = @app.create_identity
     bob_email = 'bob@tanker.io'
-    bob_provisional_identity = Tanker::Identity.create_provisional_identity(@app.id, bob_email)
+    bob_provisional_identity = Tanker::Identity.create_provisional_identity(@app.id, 'email', bob_email)
     bob_public_identity = Tanker::Identity.get_public_identity bob_provisional_identity
 
     alice = Tanker::Core.new @options
@@ -343,7 +343,7 @@ RSpec.describe Tanker do
 
   it 'throws if attaching an already attached provisional identity' do
     bob_email = 'bob@tanker.io'
-    bob_provisional_identity = Tanker::Identity.create_provisional_identity(@app.id, bob_email)
+    bob_provisional_identity = Tanker::Identity.create_provisional_identity(@app.id, 'email', bob_email)
 
     bob = Tanker::Core.new @options
     bob_identity = @app.create_identity
