@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = Gem::Requirement.new('>= 2.6.0')
 
   spec.metadata['homepage_uri'] = spec.homepage
+  spec.metadata['rubygems_mfa_required'] = 'true'
   spec.metadata['source_code_uri'] = 'https://github.com/TankerHQ/sdk-ruby'
 
   # Specify which files should be added to the gem when it is released.
@@ -34,14 +35,6 @@ Gem::Specification.new do |spec|
 
   spec.require_paths = ['lib']
 
+  spec.add_runtime_dependency 'faraday', '~> 0.17.5'
   spec.add_runtime_dependency 'ffi', '~> 1.13'
-
-  spec.add_development_dependency 'bundler', '~> 2.0'
-  spec.add_development_dependency 'bundler-audit', '~> 0.7'
-  spec.add_development_dependency 'rake', '~> 13.0'
-  spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'rubocop', '~> 1.13'
-  spec.add_development_dependency 'rubygems-tasks', '~> 0.2.5'
-  spec.add_development_dependency 'tanker-identity', '~> 0.1'
-  spec.metadata['rubygems_mfa_required'] = 'true'
 end

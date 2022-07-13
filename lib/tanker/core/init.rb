@@ -14,7 +14,7 @@ module Tanker
       end
     end
 
-    def self.set_log_handler(&block) # rubocop:disable Naming/AccessorMethodName
+    def self.set_log_handler(&block)
       @log_handler_set = 1
       @log_handler = lambda do |clog|
         block.call LogRecord.new clog[:category], clog[:level], clog[:file], clog[:line], clog[:message]
