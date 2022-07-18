@@ -27,12 +27,12 @@ RSpec.describe "#{Tanker} Encryption Sessions" do
   end
 
   after(:each) do
-    @alice.free
-    @bob.free
+    @alice&.free
+    @bob&.free
   end
 
   after(:all) do
-    @app.delete
+    @app&.delete
   end
 
   it 'can open and close native encryption sessions' do
