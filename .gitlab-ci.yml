@@ -116,31 +116,31 @@ lint:
 .profiles/linux/2.7:
   variables:
     RBENV_VERSION: 2.7.5
-    TANKER_PROFILES: --profile linux-x86_64 shared no-fetchpp
+    TANKER_PROFILES: --profile linux-x86_64 shared no-http-backend
 
 .profiles/linux/3.0:
   variables:
     RBENV_VERSION: 3.0.3
-    TANKER_PROFILES: --profile linux-x86_64 shared no-fetchpp
+    TANKER_PROFILES: --profile linux-x86_64 shared no-http-backend
 
 .profiles/linux/3.1:
   variables:
     RBENV_VERSION: 3.1.2
-    TANKER_PROFILES: --profile linux-x86_64 shared no-fetchpp
+    TANKER_PROFILES: --profile linux-x86_64 shared no-http-backend
 
 .profiles/macos/x86_64/2.7:
   extends:
     - .tags/macos/x86_64
   variables:
     RBENV_VERSION: 2.7.1
-    TANKER_PROFILES: --profile macos-x86_64 shared no-fetchpp
+    TANKER_PROFILES: --profile macos-x86_64 shared no-http-backend
 
 .profiles/macos/arm/2.7:
   extends:
     - .tags/macos/arm
   variables:
     RBENV_VERSION: 2.7.3
-    TANKER_PROFILES: --profile macos-armv8 shared no-fetchpp
+    TANKER_PROFILES: --profile macos-armv8 shared no-http-backend
 
 #################
 # prepare stage #
