@@ -9,12 +9,14 @@ include:
 
 workflow:
   rules:
+    - if: $SDK_NATIVE_LATEST_CONAN_REFERENCE == null
+      variables:
+        SDK_NATIVE_LATEST_CONAN_REFERENCE: tanker/latest-stable@
     # web pipelines for releases only
     - if: $CI_PIPELINE_SOURCE == "web" && $SDK_RUBY_RELEASE_VERSION !~ /\A\d+\.\d+\.\d+(\.(alpha|beta)\.\d+)?\z/
       when: never
     - if: !reference [.if-invalid-native-conan-reference, if]
       when: never
-    # allow everything else
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       variables:
         CONAN_REMOTE: "artifactory"
