@@ -48,26 +48,6 @@ module Tanker
       method_list
     end
 
-    def device_id
-      CTanker.tanker_device_id(@ctanker).get_string
-    end
-
-    def device_list
-      device_list_ptr = CTanker.tanker_get_device_list(@ctanker).get
-      count = device_list_ptr.get(:uint32, FFI::Pointer.size)
-
-      method_base_addr = device_list_ptr.read_pointer
-      device_info_list = count.times.map do |i|
-        method_ptr = method_base_addr + (i * CTanker::CDeviceInfo.size)
-        CTanker::CDeviceInfo.new(method_ptr)
-      end
-      CTanker.tanker_free_device_list device_list_ptr
-      device_info_list
-    end
-
-    deprecate :device_id, :none, 2022, 1
-    deprecate :device_list, :none, 2022, 1
-
     def stop
       CTanker.tanker_stop(@ctanker).get
     end
