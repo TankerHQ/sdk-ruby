@@ -123,14 +123,14 @@ lint:
   extends:
     - .tags/macos/x86_64
   variables:
-    RBENV_VERSION: 2.7.1
+    RBENV_VERSION: 2.7.6
     TANKER_PROFILES: --profile macos-x86_64 shared no-http-backend
 
 .profiles/macos/arm/2.7:
   extends:
     - .tags/macos/arm
   variables:
-    RBENV_VERSION: 2.7.3
+    RBENV_VERSION: 2.7.6
     TANKER_PROFILES: --profile macos-armv8 shared no-http-backend
 
 #################
