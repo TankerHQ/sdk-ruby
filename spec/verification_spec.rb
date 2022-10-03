@@ -194,9 +194,6 @@ RSpec.describe "#{Tanker} Verification" do
   end
 
   describe 'preverified methods' do
-    before(:all) { @app.toggle_preverified_verification true }
-    after(:all) { @app.toggle_preverified_verification false }
-
     it 'fails to register with preverified email' do
       email = 'mono@chromat.ic'
 
