@@ -258,7 +258,7 @@ RSpec.describe "#{Tanker} streams" do
     )
     encrypted = encrypted_stream.read
     encrypted_stream.close
-    expect(encrypted.length).to eq(3_146_248)
+    expect(encrypted.length).to eq((3 * 1024 * 1024) + 389)
     in_stream = StringIO.new(encrypted)
     decrypted_stream = @tanker.decrypt_stream in_stream
 
