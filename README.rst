@@ -12,6 +12,13 @@ data.
 
 This repository only contains Ruby bindings. The core library can be found in the `TankerHQ/sdk-native GitHub project <https://github.com/TankerHQ/sdk-native>`_.
 
+
+Known issues
+------------
+
+- Deadlock at exit: thread, processes, mutexes and FFI have a complex interaction which can cause deadlocks if a mutex is aquired before a fork.
+  In issue `E2EE-162`, some ruby callbacks were never called, find `here <https://github.com/ffi/ffi/compare/master...blastrock:ffi:stop-deadlock>`_ a potential FFI fix.
+
 Contributing
 ------------
 
