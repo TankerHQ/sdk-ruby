@@ -7,7 +7,6 @@ Gem::Specification.new do |spec|
   spec.name          = 'tanker-core'
   spec.version       = Tanker::Core::VERSION
   spec.authors       = ['Tanker team']
-  spec.email         = ['tech@tanker.io']
 
   spec.summary       = 'Ruby SDK for Tanker'
   spec.description   = <<~DESCRIPTION
