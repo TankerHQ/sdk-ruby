@@ -4,20 +4,18 @@ $LOAD_PATH.unshift File.expand_path('lib', __dir__)
 require 'tanker/core/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'tanker-core'
-  spec.version       = Tanker::Core::VERSION
-  spec.authors       = ['Tanker team']
+  spec.name        = 'tanker-core'
+  spec.version     = Tanker::Core::VERSION
+  spec.authors     = ['Tanker team']
 
-  spec.summary       = 'Ruby SDK for Tanker'
-  spec.description   = <<~DESCRIPTION
+  spec.summary     = 'Ruby SDK for Tanker'
+  spec.description = <<~DESCRIPTION
     Ruby bindings for the Tanker SDK.
     Tanker is a platform as a service that allows you to easily protect your users' data with end-to-end encryption through a SDK
   DESCRIPTION
-  spec.homepage      = 'https://tanker.io'
-  spec.license       = 'Apache-2.0'
+  spec.license = 'Apache-2.0'
   spec.required_ruby_version = Gem::Requirement.new('>= 2.7.0')
 
-  spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['rubygems_mfa_required'] = 'true'
   spec.metadata['source_code_uri'] = 'https://github.com/TankerHQ/sdk-ruby'
 
