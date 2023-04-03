@@ -8,7 +8,6 @@ variables:
   RUBY_3_2: 3.2.2
   RUBY_3_1: 3.1.3
   RUBY_3_0: 3.0.5
-  RUBY_2_7: 2.7.7
   PROFILE_LINUX: --profile linux-x86_64 shared no-http-backend
   PROFILE_MAC_X86: --profile macos-x86_64 shared no-http-backend
   PROFILE_MAC_ARM: --profile macos-armv8 shared no-http-backend
@@ -171,14 +170,6 @@ prepare/macos/arm:
     - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE prepare --use-tanker=same-as-branch $TANKER_PROFILES
     - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE build --test
 
-check/native-from-sources/linux/2.7:
-  extends:
-    - .check/native-from-sources
-  variables:
-    RBENV_VERSION: $RUBY_2_7
-    TANKER_PROFILES: $PROFILE_LINUX
-  tags: !reference [.tags/compilation-linux, tags]
-
 check/native-from-sources/linux/3.0:
   extends:
     - .check/native-from-sources
@@ -229,16 +220,6 @@ check/native-from-sources/macos/arm:
     - .rules/check/deployed-native
   script:
     - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE build --test
-
-check/deployed-native/linux/2.7:
-  extends:
-    - .check/deployed-native
-  variables:
-    RBENV_VERSION: $RUBY_2_7
-    TANKER_PROFILES: $PROFILE_LINUX
-  needs:
-    - prepare/linux
-  tags: !reference [.tags/linux, tags]
 
 check/deployed-native/linux/3.0:
   extends:
@@ -296,15 +277,6 @@ check/deployed-native/macos/arm:
   script:
     - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE prepare --use-tanker=upstream $TANKER_PROFILES
     - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE build --test
-
-check/downstream/linux/2.7:
-  extends:
-    - .check/downstream
-    - .rules/check/downstream/linux
-  variables:
-    RBENV_VERSION: $RUBY_2_7
-    TANKER_PROFILES: $PROFILE_LINUX
-  tags: !reference [.tags/linux, tags]
 
 check/downstream/linux/3.0:
   extends:
