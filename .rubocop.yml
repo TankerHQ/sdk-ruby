@@ -9,7 +9,7 @@ AllCops:
     - 'vendor/**/*'
     - 'build/**/*'
     - 'lib/tanker-core.rb'
-  TargetRubyVersion: 2.7
+  TargetRubyVersion: 3.0
 
 Layout/LineLength:
   Max: 120
