@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'logger'
+
 require 'faraday'
 
 require_relative 'app'
@@ -8,14 +10,17 @@ require_relative 'app_update_options'
 module Tanker
   class Admin
     class Client
+      VERBOSE = false # set to true to activate logging middleware globally
+
       def self.init_conn(conn)
+        conn.adapter :net_http
+
+        # Common middlewares
         conn.request :json
         conn.response :raise_error
-        ## in case of verbosity need
-        # require 'logger'
-        # conn.response :logger, ::Logger.new(STDOUT), bodies: true
+        conn.response :logger, ::Logger.new($stdout), bodies: true if VERBOSE
         conn.response :json
-        conn.adapter :net_http
+
         conn
       end
 
