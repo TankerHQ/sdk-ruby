@@ -20,7 +20,7 @@ def define_copy_tanker
   task copy_tanker_libs:
   build_infos = Dir.glob('conan/*/conanbuildinfo.json')
   raise 'too many profiles' if build_infos.size > 1
-  return if build_infos.size.zero?
+  return if build_infos.empty?
 
   deps_info = JSON.parse File.read(build_infos[0])
   tankerdep = deps_info['dependencies'].detect { |d| d['name'] == 'tanker' }
@@ -44,7 +44,7 @@ define_copy_tanker
 
 task :tanker_libs do
   libs = Dir.glob("vendor/tanker/#{vendor_arch}/#{map_library_name('ctanker')}")
-  raise 'no vendor library present and no build infos to get it from' if libs.size.zero?
+  raise 'no vendor library present and no build infos to get it from' if libs.empty?
 
   task 'copy_tanker_libs'
 end
