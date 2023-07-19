@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'faraday'
-require 'faraday_middleware'
 
 require_relative 'app'
 require_relative 'app_update_options'
