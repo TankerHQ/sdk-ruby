@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'faraday/net_http_persistent'
+
 require_relative 'admin_helper'
 require 'tanker/core'
 require 'tanker/encryption_options'

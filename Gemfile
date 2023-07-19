@@ -10,8 +10,7 @@ gemspec
 # loaded when the gem is published:
 gem 'bundler', '~> 2.0'
 gem 'bundler-audit', '~> 0.7'
-gem 'faraday_middleware', '~> 0.14.0'
-gem 'net-http-persistent', '~> 4.0'
+gem 'faraday-net_http_persistent', '~> 2.1'
 gem 'rake', '~> 13.0'
 gem 'rspec', '~> 3.0'
 gem 'rubocop', '~> 1.13'
