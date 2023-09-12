@@ -36,7 +36,7 @@ module Tanker
         @environment_name = environment_name
         @trustchain_url = trustchain_url
         @verification_api_token = verification_api_token
-        @conn = Faraday.new(url: "#{@app_management_url}/v1/apps") do |conn|
+        @conn = Faraday.new(url: "#{@app_management_url}/v2/apps") do |conn|
           conn.request :authorization, 'Bearer', @app_management_token
           self.class.init_conn(conn)
         end
