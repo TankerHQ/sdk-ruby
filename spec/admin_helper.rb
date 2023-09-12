@@ -6,12 +6,13 @@ require 'admin'
 require 'tanker/identity'
 
 class OIDCConfig
-  attr_reader :client_id, :client_secret, :provider, :users
+  attr_reader :client_id, :client_secret, :issuer, :display_name, :users
 
-  def initialize(client_id, client_secret, provider, users)
+  def initialize(client_id, client_secret, issuer, display_name, users)
     @client_id = client_id
     @client_secret = client_secret
-    @provider = provider
+    @issuer = issuer
+    @display_name = display_name
     @users = users
   end
 end
@@ -46,7 +47,8 @@ class AppConfig
 
     client_id = AppConfig.safe_get_env 'TANKER_OIDC_CLIENT_ID'
     client_secret = AppConfig.safe_get_env 'TANKER_OIDC_CLIENT_SECRET'
-    provider = AppConfig.safe_get_env 'TANKER_OIDC_PROVIDER'
+    issuer = AppConfig.safe_get_env 'TANKER_OIDC_ISSUER'
+    provider_name = AppConfig.safe_get_env 'TANKER_OIDC_PROVIDER'
     users = {
       martine: {
         email: AppConfig.safe_get_env('TANKER_OIDC_MARTINE_EMAIL'),
@@ -57,7 +59,7 @@ class AppConfig
         refresh_token: AppConfig.safe_get_env('TANKER_OIDC_KEVIN_REFRESH_TOKEN')
       }
     }
-    @oidc_config = OIDCConfig.new client_id, client_secret, provider, users
+    @oidc_config = OIDCConfig.new client_id, client_secret, issuer, provider_name, users
   end
 end
 
@@ -110,9 +112,10 @@ module Tanker
       Identity.create_identity @app.id, @app.secret, user_id
     end
 
-    def use_oidc_config(client_id, client_provider)
+    def use_oidc_config(client_id, display_name, issuer)
       app_options = Admin::AppUpdateOptions.new(oidc_client_id: client_id,
-                                                oidc_client_provider: client_provider)
+                                                oidc_display_name: display_name,
+                                                oidc_issuer: issuer)
       @admin.app_update(@app.id, app_options)
     end
 

@@ -157,7 +157,7 @@ RSpec.describe "#{Tanker} Verification" do
     martine_config = oidc_config.users[:martine]
     martine_identity = @app.create_identity martine_config[:email]
 
-    @app.use_oidc_config(oidc_config.client_id, oidc_config.provider)
+    @app.use_oidc_config(oidc_config.client_id, oidc_config.display_name, oidc_config.issuer)
 
     uri = URI('https://www.googleapis.com/oauth2/v4/token')
     req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json; charset=utf-8')
