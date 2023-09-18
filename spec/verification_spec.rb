@@ -190,7 +190,10 @@ RSpec.describe "#{Tanker} Verification" do
 
     methods = tanker2.get_verification_methods
     tanker2.free
-    expect(methods).to eq [Tanker::OIDCIDTokenVerificationMethod.new]
+
+    expect(methods.length).to eq 1
+    expect(methods[0]).to be_a Tanker::OIDCIDTokenVerificationMethod
+    expect(methods[0].provider_display_name).to eq oidc_config.display_name
   end
 
   describe 'preverified methods' do
