@@ -12,7 +12,19 @@ module Tanker
 
   class PassphraseVerificationMethod < VerificationMethod; end
   class VerificationKeyVerificationMethod < VerificationMethod; end
-  class OIDCIDTokenVerificationMethod < VerificationMethod; end
+  class OIDCIDTokenVerificationMethod < VerificationMethod
+    attr_reader :provider_id, :provider_display_name
+
+    def initialize(provider_id, provider_display_name)
+      super()
+      @provider_id = provider_id
+      @provider_display_name = provider_display_name
+    end
+
+    def ==(other)
+      super && provider_id == other.provider_id && provider_display_name == other.provider_display_name
+    end
+  end
   class EmailVerificationMethod < VerificationMethod
     attr_reader :email
 

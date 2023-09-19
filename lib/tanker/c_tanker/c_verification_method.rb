@@ -9,7 +9,8 @@ module Tanker
     class CVerificationMethod < FFI::Struct
       layout :version, :uint8,
              :type, :uint8,
-             :value, :pointer
+             :value1, :pointer,
+             :value2, :pointer
 
       TYPE_EMAIL = 1
       TYPE_PASSPHRASE = 2
@@ -23,19 +24,21 @@ module Tanker
       def to_verification_method # rubocop:disable Metrics/CyclomaticComplexity Not relevant for a case/when
         case self[:type]
         when TYPE_EMAIL
-          EmailVerificationMethod.new(self[:value].read_string.force_encoding(Encoding::UTF_8))
+          EmailVerificationMethod.new(self[:value1].read_string.force_encoding(Encoding::UTF_8))
         when TYPE_PASSPHRASE
           PassphraseVerificationMethod.new
         when TYPE_VERIFICATION_KEY
           VerificationKeyVerificationMethod.new
         when TYPE_OIDC_ID_TOKEN
-          OIDCIDTokenVerificationMethod.new
+          provider_id = self[:value1].read_string.force_encoding(Encoding::UTF_8)
+          provider_display_name = self[:value2].read_string.force_encoding(Encoding::UTF_8)
+          OIDCIDTokenVerificationMethod.new(provider_id, provider_display_name)
         when TYPE_PHONE_NUMBER
-          PhoneNumberVerificationMethod.new(self[:value].read_string.force_encoding(Encoding::UTF_8))
+          PhoneNumberVerificationMethod.new(self[:value1].read_string.force_encoding(Encoding::UTF_8))
         when TYPE_PREVERIFIED_EMAIL
-          PreverifiedEmailVerificationMethod.new(self[:value].read_string.force_encoding(Encoding::UTF_8))
+          PreverifiedEmailVerificationMethod.new(self[:value1].read_string.force_encoding(Encoding::UTF_8))
         when TYPE_PREVERIFIED_PHONE_NUMBER
-          PreverifiedPhoneNumberVerificationMethod.new(self[:value].read_string.force_encoding(Encoding::UTF_8))
+          PreverifiedPhoneNumberVerificationMethod.new(self[:value1].read_string.force_encoding(Encoding::UTF_8))
         when TYPE_E2E_PASSPHRASE
           E2ePassphraseVerificationMethod.new
         else
