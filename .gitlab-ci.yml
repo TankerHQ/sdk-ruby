@@ -5,6 +5,7 @@ include:
 
 variables:
   SDK_NATIVE_CONAN_REFERENCE: tanker/latest-stable@
+  RUBY_3_3: 3.3.0
   RUBY_3_2: 3.2.2
   RUBY_3_1: 3.1.3
   RUBY_3_0: 3.0.5
@@ -189,6 +190,14 @@ check/native-from-sources/linux/3.2:
     TANKER_PROFILES: $PROFILE_LINUX
   tags: !reference [.tags/compilation-linux, tags]
 
+check/native-from-sources/linux/3.3:
+  extends:
+    - .check/native-from-sources
+  variables:
+    RBENV_VERSION: $RUBY_3_3
+    TANKER_PROFILES: $PROFILE_LINUX
+  tags: !reference [.tags/compilation-linux, tags]
+
 check/native-from-sources/macos/x86_64:
   extends:
     - .tags/macos/x86_64
@@ -246,6 +255,16 @@ check/deployed-native/linux/3.2:
     - prepare/linux
   tags: !reference [.tags/linux, tags]
 
+check/deployed-native/linux/3.3:
+  extends:
+    - .check/deployed-native
+  variables:
+    RBENV_VERSION: $RUBY_3_3
+    TANKER_PROFILES: $PROFILE_LINUX
+  needs:
+    - prepare/linux
+  tags: !reference [.tags/linux, tags]
+
 check/deployed-native/macos/x86_64:
   extends:
     - .tags/macos/x86_64
@@ -297,6 +316,15 @@ check/downstream/linux/3.2:
     - .rules/check/downstream/linux
   variables:
     RBENV_VERSION: $RUBY_3_2
+    TANKER_PROFILES: $PROFILE_LINUX
+  tags: !reference [.tags/linux, tags]
+
+check/downstream/linux/3.3:
+  extends:
+    - .check/downstream
+    - .rules/check/downstream/linux
+  variables:
+    RBENV_VERSION: $RUBY_3_3
     TANKER_PROFILES: $PROFILE_LINUX
   tags: !reference [.tags/linux, tags]
 
