@@ -44,7 +44,7 @@ default:
     - poetry run python -m pip install --upgrade pip
     - poetry install
     - poetry run python --version
-  image: registry.gitlab.com/tankerhq/docker/sdk-ruby:latest
+  image: registry.gitlab.com/tankerhq/docker/sdk-ruby:tim-ubuntu-upgrade.1647
 
 ##########
 # Stages #
