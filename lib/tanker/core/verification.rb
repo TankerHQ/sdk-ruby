@@ -94,6 +94,20 @@ module Tanker
     end
   end
 
+  class PreverifiedOIDCVerification < Verification
+    attr_reader :provider_id, :subject
+
+    def initialize(subject, provider_id)
+      super()
+
+      ASSERT_UTF8.call(provider_id)
+      ASSERT_UTF8.call(subject)
+
+      @provider_id = provider_id
+      @subject = subject
+    end
+  end
+
   class E2ePassphraseVerification < Verification
     attr_reader :e2e_passphrase
 
