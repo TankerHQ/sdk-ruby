@@ -20,6 +20,7 @@ module Tanker
       TYPE_PREVERIFIED_EMAIL = 6
       TYPE_PREVERIFIED_PHONE_NUMBER = 7
       TYPE_E2E_PASSPHRASE = 8
+      # TYPE_PREVERIFIED_OIDC = 9 # Preverified OIDC is not exposed as a VerificationMethod
 
       def to_verification_method # rubocop:disable Metrics/CyclomaticComplexity Not relevant for a case/when
         case self[:type]

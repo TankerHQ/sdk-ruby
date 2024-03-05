@@ -42,6 +42,24 @@ module Tanker
       end
     end
 
+    class COIDCVerification < FFI::Struct
+      layout :version, :uint8,
+             :subject, :pointer,
+             :provider_id, :pointer
+
+      def initialize(subject, provider_id)
+        super()
+
+        # NOTE: Instance variables are required to keep the CStrings alive
+        @subject = CTanker.new_cstring subject
+        @provider_id = CTanker.new_cstring provider_id
+
+        self[:version] = 1
+        self[:subject] = @subject
+        self[:provider_id] = @provider_id
+      end
+    end
+
     class CVerification < FFI::Struct
       layout :version, :uint8,
              :type, :uint8,
@@ -52,7 +70,8 @@ module Tanker
              :oidc_id_token, :pointer,
              :phone_number_verification, CPhoneNumberVerification,
              :preverified_email, :pointer,
-             :preverified_phone_number, :pointer
+             :preverified_phone_number, :pointer,
+             :preverified_oidc, COIDCVerification
 
       TYPE_EMAIL = 1
       TYPE_PASSPHRASE = 2
@@ -62,6 +81,7 @@ module Tanker
       TYPE_PREVERIFIED_EMAIL = 6
       TYPE_PREVERIFIED_PHONE_NUMBER = 7
       TYPE_E2E_PASSPHRASE = 8
+      TYPE_PREVERIFIED_OIDC = 9
 
       def initialize(verification) # rubocop:disable Metrics/CyclomaticComplexity Not relevant for a case/when
         super()
@@ -103,11 +123,15 @@ module Tanker
           @e2e_passphrase = CTanker.new_cstring verification.e2e_passphrase
           self[:type] = TYPE_E2E_PASSPHRASE
           self[:e2e_passphrase] = @e2e_passphrase
+        when Tanker::PreverifiedOIDCVerification
+          @preverified_oidc = COIDCVerification.new verification.subject, verification.provider_id
+          self[:type] = TYPE_PREVERIFIED_OIDC
+          self[:preverified_oidc] = @preverified_oidc
         else
           raise ArgumentError, 'Unknown Tanker::Verification type!'
         end
 
-        self[:version] = 6
+        self[:version] = 7
       end
     end
 

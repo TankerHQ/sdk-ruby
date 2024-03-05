@@ -3,12 +3,42 @@
 require_relative 'admin_helper'
 require 'tanker/core'
 
+require 'base64'
+require 'json'
+require 'net/http'
+
+def get_id_token(oidc_config, user)
+  uri = URI('https://www.googleapis.com/oauth2/v4/token')
+  req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json; charset=utf-8')
+  req.body = {
+    grant_type: 'refresh_token',
+    refresh_token: oidc_config.users[user][:refresh_token],
+    client_id: oidc_config.client_id,
+    client_secret: oidc_config.client_secret
+  }.to_json
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
+  reply = JSON.parse http.request(req).body
+  reply['id_token']
+end
+
+def extract_subject(id_token)
+  jwt_body = id_token.split('.')[1]
+  jbody = JSON.parse Base64.urlsafe_decode64(jwt_body)
+  jbody['sub']
+end
+
 RSpec.describe "#{Tanker} Verification" do
   before(:all) do
     Tanker::App.use_test_log_handler
     @app = Tanker::App.new
     @options = Tanker::Core::Options.new app_id: @app.id, url: @app.url,
                                          sdk_type: 'sdk-ruby-test', persistent_path: ':memory:', cache_path: ':memory:'
+
+    @oidc_config = AppConfig.instance.oidc_config
+    @martine_id_token = get_id_token(@oidc_config, :martine)
+    @martine_subject = extract_subject(@martine_id_token)
+    expect(@martine_id_token).to_not be_nil
   end
 
   before(:each) do
@@ -150,28 +180,10 @@ RSpec.describe "#{Tanker} Verification" do
   end
 
   it 'can use OIDC ID Tokens as verification' do
-    require 'net/http'
-    require 'json'
+    martine_identity = @app.create_identity @oidc_config.users[:martine][:email]
+    oidc_token = @martine_id_token
 
-    oidc_config = AppConfig.instance.oidc_config
-    martine_config = oidc_config.users[:martine]
-    martine_identity = @app.create_identity martine_config[:email]
-
-    @app.use_oidc_config(oidc_config.client_id, oidc_config.display_name, oidc_config.issuer)
-
-    uri = URI('https://www.googleapis.com/oauth2/v4/token')
-    req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json; charset=utf-8')
-    req.body = {
-      grant_type: 'refresh_token',
-      refresh_token: martine_config[:refresh_token],
-      client_id: oidc_config.client_id,
-      client_secret: oidc_config.client_secret
-    }.to_json
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-    reply = JSON.parse http.request(req).body
-    oidc_token = reply['id_token']
-    expect(oidc_token).to_not be_nil
+    @app.use_oidc_config(@oidc_config.client_id, @oidc_config.display_name, @oidc_config.issuer)
 
     tanker1 = Tanker::Core.new @options
     nonce = tanker1.create_oidc_nonce
@@ -193,7 +205,7 @@ RSpec.describe "#{Tanker} Verification" do
 
     expect(methods.length).to eq 1
     expect(methods[0]).to be_a Tanker::OIDCIDTokenVerificationMethod
-    expect(methods[0].provider_display_name).to eq oidc_config.display_name
+    expect(methods[0].provider_display_name).to eq @oidc_config.display_name
   end
 
   describe 'preverified methods' do
@@ -219,6 +231,23 @@ RSpec.describe "#{Tanker} Verification" do
       tanker.start @identity
 
       expect { tanker.register_identity Tanker::PreverifiedPhoneNumberVerification.new(phone_number) }
+        .to(raise_error) do |e|
+        expect(e).to be_a(Tanker::Error)
+        expect(e).to be_a(Tanker::Error::InvalidArgument)
+        expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+      end
+
+      tanker.free
+    end
+
+    it 'fails to register with preverified oidc' do
+      app_config = @app.use_oidc_config(@oidc_config.client_id, @oidc_config.display_name, @oidc_config.issuer)
+      provider_id = app_config['app']['oidc_providers'][0]['id']
+
+      tanker = Tanker::Core.new @options
+      tanker.start @identity
+
+      expect { tanker.register_identity Tanker::PreverifiedOIDCVerification.new('subject', provider_id) }
         .to(raise_error) do |e|
         expect(e).to be_a(Tanker::Error)
         expect(e).to be_a(Tanker::Error::InvalidArgument)
@@ -271,6 +300,30 @@ RSpec.describe "#{Tanker} Verification" do
       tanker2.free
     end
 
+    it 'fails to verify with preverified oidc' do
+      app_config = @app.use_oidc_config(@oidc_config.client_id, @oidc_config.display_name, @oidc_config.issuer)
+      provider_id = app_config['app']['oidc_providers'][0]['id']
+
+      tanker1 = Tanker::Core.new @options
+      nonce = tanker1.create_oidc_nonce
+      tanker1.start @identity
+      tanker1.oidc_test_nonce = nonce
+      tanker1.register_identity Tanker::OIDCIDTokenVerification.new(@martine_id_token)
+      tanker1.free
+
+      tanker2 = Tanker::Core.new @options
+      tanker2.start @identity
+
+      expect { tanker2.verify_identity Tanker::PreverifiedOIDCVerification.new(@martine_subject, provider_id) }
+        .to(raise_error) do |e|
+        expect(e).to be_a(Tanker::Error)
+        expect(e).to be_a(Tanker::Error::InvalidArgument)
+        expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+      end
+
+      tanker2.free
+    end
+
     it 'sets verification method with preverified email' do
       email = 'mono@chromat.ic'
 
@@ -314,6 +367,29 @@ RSpec.describe "#{Tanker} Verification" do
       tanker2.free
       expect(methods).to eq [Tanker::PhoneNumberVerificationMethod.new(phone_number),
                              Tanker::PassphraseVerificationMethod.new]
+    end
+
+    it 'sets verification method with preverified oidc' do
+      app_config = @app.use_oidc_config(@oidc_config.client_id, @oidc_config.display_name, @oidc_config.issuer)
+      provider_id = app_config['app']['oidc_providers'][0]['id']
+      display_name = app_config['app']['oidc_providers'][0]['display_name']
+
+      tanker1 = Tanker::Core.new @options
+      tanker1.start @identity
+      tanker1.register_identity Tanker::PassphraseVerification.new 'The truth does not exist'
+      tanker1.set_verification_method Tanker::PreverifiedOIDCVerification.new(@martine_subject, provider_id)
+      methods = tanker1.get_verification_methods
+      tanker1.free
+      expect(methods).to eq [Tanker::PassphraseVerificationMethod.new,
+                             Tanker::OIDCIDTokenVerificationMethod.new(provider_id, display_name)]
+
+      tanker2 = Tanker::Core.new @options
+      tanker2.start @identity
+      nonce = tanker2.create_oidc_nonce
+      tanker2.oidc_test_nonce = nonce
+      tanker2.verify_identity Tanker::OIDCIDTokenVerification.new(@martine_id_token)
+      expect(tanker2.status).to eq(Tanker::Status::READY)
+      tanker2.free
     end
   end
 
@@ -423,17 +499,23 @@ RSpec.describe "#{Tanker} Verification" do
     end
 
     it 'works with preverified methods' do
+      app_config = @app.use_oidc_config(@oidc_config.client_id, @oidc_config.display_name, @oidc_config.issuer)
+      provider_id = app_config['app']['oidc_providers'][0]['id']
+
       phone_number = '+33639982233'
       email = 'mono@chromat.ic'
       @server.enroll_user(@identity, [
                             Tanker::PreverifiedPhoneNumberVerification.new(phone_number),
-                            Tanker::PreverifiedEmailVerification.new(email)
+                            Tanker::PreverifiedEmailVerification.new(email),
+                            Tanker::PreverifiedOIDCVerification.new(@martine_subject, provider_id)
                           ])
 
       tanker1 = Tanker::Core.new @options
       tanker1.start @identity
       tanker2 = Tanker::Core.new @options
       tanker2.start @identity
+      tanker3 = Tanker::Core.new @options
+      tanker3.start @identity
 
       expect(tanker1.status).to eq(Tanker::Status::IDENTITY_VERIFICATION_NEEDED)
       tanker1.verify_identity Tanker::EmailVerification.new(
@@ -447,8 +529,15 @@ RSpec.describe "#{Tanker} Verification" do
       )
       expect(tanker2.status).to eq(Tanker::Status::READY)
 
+      expect(tanker3.status).to eq(Tanker::Status::IDENTITY_VERIFICATION_NEEDED)
+      nonce = tanker3.create_oidc_nonce
+      tanker3.oidc_test_nonce = nonce
+      tanker3.verify_identity Tanker::OIDCIDTokenVerification.new(@martine_id_token)
+      expect(tanker3.status).to eq(Tanker::Status::READY)
+
       tanker1.free
       tanker2.free
+      tanker3.free
     end
   end
 
