@@ -89,6 +89,8 @@ module Tanker
 
     blocking_attach_function :tanker_prehash_password, [:string], CFuture
 
+    blocking_attach_function :tanker_authenticate_with_idp, [:session_pointer, :string, :string], CFuture
+
     blocking_attach_function :tanker_free_buffer, [:pointer], :void
     blocking_attach_function :tanker_free_verification_method_list, [:pointer], :void
   end

@@ -208,6 +208,69 @@ RSpec.describe "#{Tanker} Verification" do
     expect(methods[0].provider_display_name).to eq @oidc_config.display_name
   end
 
+  it 'can use OIDC authorization code verification' do
+    app_config = @app.use_oidc_config('tanker', 'fake-oidc', @oidc_config.fake_oidc_issuer_url)
+    provider_id = app_config['app']['oidc_providers'][0]['id']
+    subject_cookie = 'fake_oidc_subject=martine'
+
+    tanker1 = Tanker::Core.new @options
+    tanker1.start @identity
+
+    verification1 = tanker1.authenticate_with_idp(provider_id, subject_cookie)
+    verification2 = tanker1.authenticate_with_idp(provider_id, subject_cookie)
+
+    tanker1.register_identity verification1
+    tanker1.free
+
+    tanker2 = Tanker::Core.new @options
+    tanker2.start @identity
+    tanker2.verify_identity verification2
+    expect(tanker2.status).to eq(Tanker::Status::READY)
+    tanker2.free
+
+    tanker3 = Tanker::Core.new @options
+    tanker3.start @identity
+    verification3 = tanker3.authenticate_with_idp(provider_id, 'fake_oidc_subject=not-martine')
+    expect { tanker3.verify_identity verification3 }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidVerification)
+      expect(e.code).to eq(Tanker::Error::INVALID_VERIFICATION)
+    end
+    tanker3.free
+  end
+
+  it 'can set OIDC authorization code verification' do
+    app_config = @app.use_oidc_config('tanker', 'fake-oidc', @oidc_config.fake_oidc_issuer_url)
+    provider_id = app_config['app']['oidc_providers'][0]['id']
+    subject_cookie = 'fake_oidc_subject=martine'
+
+    tanker1 = Tanker::Core.new @options
+    tanker1.start @identity
+
+    tanker1.register_identity Tanker::PassphraseVerification.new('**********')
+
+    verification1 = tanker1.authenticate_with_idp(provider_id, subject_cookie)
+    tanker1.set_verification_method verification1
+    tanker1.free
+
+    tanker2 = Tanker::Core.new @options
+    tanker2.start @identity
+    verification2 = tanker2.authenticate_with_idp(provider_id, subject_cookie)
+    tanker2.verify_identity verification2
+    expect(tanker2.status).to eq(Tanker::Status::READY)
+    tanker2.free
+
+    tanker3 = Tanker::Core.new @options
+    tanker3.start @identity
+    verification3 = tanker3.authenticate_with_idp(provider_id, 'fake_oidc_subject=not-martine')
+    expect { tanker3.verify_identity verification3 }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidVerification)
+      expect(e.code).to eq(Tanker::Error::INVALID_VERIFICATION)
+    end
+    tanker3.free
+  end
+
   describe 'preverified methods' do
     it 'fails to register with preverified email' do
       email = 'mono@chromat.ic'
