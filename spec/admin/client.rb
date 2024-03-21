@@ -68,7 +68,7 @@ module Tanker
       end
 
       def get_email_verification_code(app_id, email)
-        conn = Faraday.new(url: @api_url) do |f|
+        conn = Faraday.new(url: @trustchain_url) do |f|
           self.class.init_conn(f)
         end
         response = conn.post('/verification/email/code',
@@ -77,7 +77,7 @@ module Tanker
       end
 
       def get_sms_verification_code(app_id, phone_number)
-        conn = Faraday.new(url: @api_url) do |f|
+        conn = Faraday.new(url: @trustchain_url) do |f|
           self.class.init_conn(f)
         end
         response = conn.post('/verification/sms/code',
