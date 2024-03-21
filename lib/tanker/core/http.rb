@@ -4,6 +4,15 @@ require 'faraday'
 
 module Tanker
   module Http
+    class HttpHeader
+      attr_reader :name, :value
+
+      def initialize(name, value)
+        @name = name
+        @value = value
+      end
+    end
+
     class HttpRequest
       @@mutex = Mutex.new # rubocop:disable Style/ClassVars I have no idea why you don't like class vars
       @@current_request_id = 0 # rubocop:disable Style/ClassVars
@@ -13,8 +22,7 @@ module Tanker
       attr_reader :id
       attr_reader :method
       attr_reader :url
-      attr_reader :instance_id
-      attr_reader :authorization
+      attr_reader :headers
       attr_reader :body
       attr_reader :crequest
 
@@ -38,9 +46,15 @@ module Tanker
 
         @method = self.class.method_str_to_symbol crequest[:method]
         @url = crequest[:url]
-        @instance_id = crequest[:instance_id]
-        @authorization = crequest[:authorization]
         @body = crequest[:body].read_string_length(crequest[:body_size])
+
+        count = crequest[:num_headers]
+        headers_base_addr = crequest[:headers]
+        @headers = count.times.map do |i|
+          header_ptr = headers_base_addr + (i * CTanker::CHttpRequestHeader.size)
+          c_header = CTanker::CHttpRequestHeader.new header_ptr
+          HttpHeader.new(c_header[:name], c_header[:value])
+        end
 
         # Keep the crequest because we need its address to answer to Tanker
         @crequest = crequest
@@ -123,18 +137,27 @@ module Tanker
       end
 
       def process_request(request)
-        fresponse = Faraday.run_request(request.method, request.url, request.body, {
-          'X-Tanker-SdkType' => @sdk_type,
-          'X-Tanker-SdkVersion' => @sdk_version,
-          'Authorization' => request.authorization,
-          'X-Tanker-Instanceid' => request.instance_id,
-          # net-http really wants a Content-Type
-          'Content-Type' => 'application/data'
-        }.compact)
+        headers = Faraday::Utils::Headers.new
+
+        request.headers.each do |header|
+          # Faraday stores identical headers as a comma separated string
+          headers[header.name] = [headers[header.name], header.value].compact
+        end
+
+        # overwrite sdk-native headers
+        headers['X-Tanker-SdkType'] = @sdk_type
+        headers['X-Tanker-SdkVersion'] = @sdk_version
+
+        fresponse = Faraday.run_request(request.method, request.url, request.body, headers)
 
         request.complete_if_not_canceled do
+          # Faraday stores identical headers as a comma separated string
+          # So we will only see a single header in sdk-native
+          headers = fresponse.headers.map do |name, value|
+            HttpHeader.new name, value
+          end
           cresponse = CTanker::CHttpResponse.new_ok status_code: fresponse.status,
-                                                    content_type: fresponse.headers['content-type'],
+                                                    headers:,
                                                     body: fresponse.body
           CTanker.tanker_http_handle_response(request.crequest, cresponse)
         end
