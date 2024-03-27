@@ -151,7 +151,7 @@ module Tanker
       end
 
       def send_request(crequest, _cdata)
-        request = HttpRequest.new crequest: crequest
+        request = HttpRequest.new(crequest:)
         ThreadPool.push(proc do
           process_request request
         end)

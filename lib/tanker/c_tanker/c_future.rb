@@ -12,7 +12,7 @@ module Tanker
     ffi_lib get_path('ctanker')
 
     class CFuture < FFI::AutoPointer
-      def initialize(ptr, proc = nil, &block)
+      def initialize(ptr, proc = nil, &)
         super
         @cfuture = ptr
       end

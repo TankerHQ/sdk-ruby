@@ -44,7 +44,7 @@ module Tanker
 
       def create_app(name)
         response = @conn.post do |req|
-          req.body = { name: name, environment_name: @environment_name }
+          req.body = { name:, environment_name: @environment_name }
           req.headers['Accept'] = 'application/json'
         end
         App.new(
@@ -72,7 +72,7 @@ module Tanker
           self.class.init_conn(f)
         end
         response = conn.post('/verification/email/code',
-                             { email: email, app_id: app_id, auth_token: @verification_api_token })
+                             { email:, app_id:, auth_token: @verification_api_token })
         response.body['verification_code']
       end
 
@@ -81,7 +81,7 @@ module Tanker
           self.class.init_conn(f)
         end
         response = conn.post('/verification/sms/code',
-                             { phone_number: phone_number, app_id: app_id, auth_token: @verification_api_token })
+                             { phone_number:, app_id:, auth_token: @verification_api_token })
         response.body['verification_code']
       end
     end
