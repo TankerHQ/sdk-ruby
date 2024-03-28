@@ -42,6 +42,7 @@ module Tanker
     blocking_attach_function :tanker_set_oidc_test_nonce, [:session_pointer, :string], CFuture
 
     blocking_attach_function :tanker_attach_provisional_identity, [:session_pointer, :string], CFuture
+    blocking_attach_function :tanker_free_attach_result, [:pointer], :void
     blocking_attach_function :tanker_verify_provisional_identity, [:session_pointer, CVerification], CFuture
 
     blocking_attach_function :tanker_encrypted_size, [:uint64, :uint32], :uint64

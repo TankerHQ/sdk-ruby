@@ -69,6 +69,8 @@ module Tanker
       attach_status = attach_ptr.get(:uint8, 1)
       method_ptr = attach_ptr.get_pointer(FFI::Pointer.size)
       method = (CTanker::CVerificationMethod.new(method_ptr).to_verification_method if method_ptr.address != 0)
+
+      CTanker.tanker_free_attach_result(FFI::Pointer.new(:void, attach_ptr.address))
       AttachResult.new attach_status, method
     end
 
