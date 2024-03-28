@@ -27,7 +27,7 @@ module Tanker
         end
         {
           oidc_providers: providers,
-          oidc_providers_allow_delete: oidc_providers_allow_delete,
+          oidc_providers_allow_delete:,
           preverified_verification_enabled: @preverified_verification,
           enroll_users_enabled: @user_enrollment
         }
