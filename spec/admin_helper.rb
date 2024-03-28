@@ -135,6 +135,16 @@ module Tanker
              :provider_id, :string,
              :authorization_code, :string,
              :state, :string
+
+      def initialize(cverification)
+        super(cverification)
+
+        @cverification = cverification
+        cverification_addr = @cverification.address
+        ObjectSpace.define_finalizer(@cverification) do |_|
+          CTanker.tanker_free_authenticate_with_idp_result(FFI::Pointer.new(:void, cverification_addr))
+        end
+      end
     end
   end
   class Core
