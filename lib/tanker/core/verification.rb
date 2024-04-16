@@ -70,6 +70,22 @@ module Tanker
     end
   end
 
+  class OIDCAuthorizationCodeVerification < Verification
+    attr_reader :provider_id, :authorization_code, :state
+
+    def initialize(provider_id, authorization_code, state)
+      super()
+
+      ASSERT_UTF8.call(provider_id)
+      ASSERT_UTF8.call(authorization_code)
+      ASSERT_UTF8.call(state)
+
+      @provider_id = provider_id
+      @authorization_code = authorization_code
+      @state = state
+    end
+  end
+
   class PreverifiedEmailVerification < Verification
     attr_reader :preverified_email
 

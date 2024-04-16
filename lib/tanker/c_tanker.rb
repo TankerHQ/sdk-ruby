@@ -42,6 +42,7 @@ module Tanker
     blocking_attach_function :tanker_set_oidc_test_nonce, [:session_pointer, :string], CFuture
 
     blocking_attach_function :tanker_attach_provisional_identity, [:session_pointer, :string], CFuture
+    blocking_attach_function :tanker_free_attach_result, [:pointer], :void
     blocking_attach_function :tanker_verify_provisional_identity, [:session_pointer, CVerification], CFuture
 
     blocking_attach_function :tanker_encrypted_size, [:uint64, :uint32], :uint64
@@ -88,6 +89,9 @@ module Tanker
     blocking_attach_function :tanker_http_handle_response, [CHttpRequest, CHttpResponse], :void
 
     blocking_attach_function :tanker_prehash_password, [:string], CFuture
+
+    blocking_attach_function :tanker_authenticate_with_idp, [:session_pointer, :string, :string], CFuture
+    blocking_attach_function :tanker_free_authenticate_with_idp_result, [:pointer], :void
 
     blocking_attach_function :tanker_free_buffer, [:pointer], :void
     blocking_attach_function :tanker_free_verification_method_list, [:pointer], :void

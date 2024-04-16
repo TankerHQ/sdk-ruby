@@ -60,6 +60,27 @@ module Tanker
       end
     end
 
+    class COIDCAuthorizationCodeVerification < FFI::Struct
+      layout :version, :uint8,
+             :provider_id, :pointer,
+             :authorization_code, :pointer,
+             :state, :pointer
+
+      def initialize(provider_id, authorization_code, state)
+        super()
+
+        # NOTE: Instance variables are required to keep the CStrings alive
+        @provider_id = CTanker.new_cstring provider_id
+        @authorization_code = CTanker.new_cstring authorization_code
+        @state = CTanker.new_cstring state
+
+        self[:version] = 1
+        self[:provider_id] = @provider_id
+        self[:authorization_code] = @authorization_code
+        self[:state] = @state
+      end
+    end
+
     class CVerification < FFI::Struct
       layout :version, :uint8,
              :type, :uint8,
@@ -71,7 +92,8 @@ module Tanker
              :phone_number_verification, CPhoneNumberVerification,
              :preverified_email, :pointer,
              :preverified_phone_number, :pointer,
-             :preverified_oidc, COIDCVerification
+             :preverified_oidc, COIDCVerification,
+             :oidc_authorization_code_verification, COIDCAuthorizationCodeVerification
 
       TYPE_EMAIL = 1
       TYPE_PASSPHRASE = 2
@@ -82,8 +104,9 @@ module Tanker
       TYPE_PREVERIFIED_PHONE_NUMBER = 7
       TYPE_E2E_PASSPHRASE = 8
       TYPE_PREVERIFIED_OIDC = 9
+      TYPE_OIDC_AUTHORIZATION_CODE = 10
 
-      def initialize(verification) # rubocop:disable Metrics/CyclomaticComplexity Not relevant for a case/when
+      def initialize(verification) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity Not relevant for a case/when
         super()
 
         unless verification.is_a? Tanker::Verification
@@ -127,11 +150,18 @@ module Tanker
           @preverified_oidc = COIDCVerification.new verification.subject, verification.provider_id
           self[:type] = TYPE_PREVERIFIED_OIDC
           self[:preverified_oidc] = @preverified_oidc
+        when Tanker::OIDCAuthorizationCodeVerification
+          self[:type] = TYPE_OIDC_AUTHORIZATION_CODE
+          self[:oidc_authorization_code_verification] = COIDCAuthorizationCodeVerification.new(
+            verification.provider_id,
+            verification.authorization_code,
+            verification.state
+          )
         else
           raise ArgumentError, 'Unknown Tanker::Verification type!'
         end
 
-        self[:version] = 7
+        self[:version] = 8
       end
     end
 

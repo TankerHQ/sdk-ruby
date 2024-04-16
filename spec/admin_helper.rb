@@ -6,13 +6,14 @@ require 'admin'
 require 'tanker/identity'
 
 class OIDCConfig
-  attr_reader :client_id, :client_secret, :issuer, :display_name, :users
+  attr_reader :client_id, :client_secret, :issuer, :display_name, :fake_oidc_issuer_url, :users
 
-  def initialize(client_id, client_secret, issuer, display_name, users)
+  def initialize(client_id, client_secret, issuer, display_name, fake_oidc_issuer_url, users) # rubocop:disable Metrics/ParameterLists
     @client_id = client_id
     @client_secret = client_secret
     @issuer = issuer
     @display_name = display_name
+    @fake_oidc_issuer_url = fake_oidc_issuer_url
     @users = users
   end
 end
@@ -49,6 +50,7 @@ class AppConfig
     client_secret = AppConfig.safe_get_env 'TANKER_OIDC_CLIENT_SECRET'
     issuer = AppConfig.safe_get_env 'TANKER_OIDC_ISSUER'
     provider_name = AppConfig.safe_get_env 'TANKER_OIDC_PROVIDER'
+    fake_oidc_issuer_url = "#{AppConfig.safe_get_env('TANKER_FAKE_OIDC_URL')}/issuer"
     users = {
       martine: {
         email: AppConfig.safe_get_env('TANKER_OIDC_MARTINE_EMAIL'),
@@ -59,7 +61,7 @@ class AppConfig
         refresh_token: AppConfig.safe_get_env('TANKER_OIDC_KEVIN_REFRESH_TOKEN')
       }
     }
-    @oidc_config = OIDCConfig.new client_id, client_secret, issuer, provider_name, users
+    @oidc_config = OIDCConfig.new client_id, client_secret, issuer, provider_name, fake_oidc_issuer_url, users
   end
 end
 
@@ -127,6 +129,24 @@ module Tanker
 end
 
 module Tanker
+  module CTanker
+    class COIDCAuthorizationCodeVerificationResponse < FFI::Struct
+      layout :version, :uint8,
+             :provider_id, :string,
+             :authorization_code, :string,
+             :state, :string
+
+      def initialize(cverification)
+        super(cverification)
+
+        @cverification = cverification
+        cverification_addr = @cverification.address
+        ObjectSpace.define_finalizer(@cverification) do |_|
+          CTanker.tanker_free_authenticate_with_idp_result(FFI::Pointer.new(:void, cverification_addr))
+        end
+      end
+    end
+  end
   class Core
     def start_anonymous(identity)
       start_status = start identity
@@ -142,6 +162,16 @@ module Tanker
       else
         raise "Unexpected status #{start_status}, cannot start anonymous Tanker session"
       end
+    end
+
+    def authenticate_with_idp(provider_id, cookie)
+      cexpected_verification = CTanker.tanker_authenticate_with_idp(@ctanker, provider_id, cookie).get
+
+      cverification = CTanker::COIDCAuthorizationCodeVerificationResponse.new cexpected_verification
+      authorization_code = cverification[:authorization_code].force_encoding(Encoding::UTF_8)
+      state = cverification[:state].force_encoding(Encoding::UTF_8)
+
+      OIDCAuthorizationCodeVerification.new(provider_id, authorization_code, state)
     end
   end
 end
