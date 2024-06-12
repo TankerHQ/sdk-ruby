@@ -55,10 +55,12 @@ module Tanker
     def create_oidc_nonce
       CTanker.tanker_create_oidc_nonce(@ctanker).get_string
     end
+    deprecate :create_oidc_nonce, :none, 2024, 6
 
     def oidc_test_nonce=(nonce)
       CTanker.tanker_set_oidc_test_nonce(@ctanker, nonce).get
     end
+    deprecate :oidc_test_nonce=, :none, 2024, 6
 
     def status
       CTanker.tanker_status(@ctanker)

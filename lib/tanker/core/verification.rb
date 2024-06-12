@@ -45,6 +45,8 @@ module Tanker
   end
 
   class OIDCIDTokenVerification < Verification
+    extend Gem::Deprecate
+
     attr_reader :oidc_id_token
 
     def initialize(oidc_id_token)
@@ -54,6 +56,8 @@ module Tanker
 
       @oidc_id_token = oidc_id_token
     end
+
+    deprecate :initialize, 'OIDCAuthorizationCodeVerification', 2024, 6
   end
 
   class PhoneNumberVerification < Verification
