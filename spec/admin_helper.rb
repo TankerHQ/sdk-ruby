@@ -50,7 +50,7 @@ class AppConfig
     client_secret = AppConfig.safe_get_env 'TANKER_OIDC_CLIENT_SECRET'
     issuer = AppConfig.safe_get_env 'TANKER_OIDC_ISSUER'
     provider_name = AppConfig.safe_get_env 'TANKER_OIDC_PROVIDER'
-    fake_oidc_issuer_url = "#{AppConfig.safe_get_env('TANKER_FAKE_OIDC_URL')}/issuer"
+    fake_oidc_issuer_url = "#{AppConfig.safe_get_env('TANKER_FAKE_OIDC_URL')}/issuers/main"
     users = {
       martine: {
         email: AppConfig.safe_get_env('TANKER_OIDC_MARTINE_EMAIL'),
@@ -114,10 +114,12 @@ module Tanker
       Identity.create_identity @app.id, @app.secret, user_id
     end
 
-    def use_oidc_config(client_id, display_name, issuer)
+    def use_oidc_config(client_id, display_name, issuer,
+                        provider_group_id: 'j8lbA90EM5cYaQ3uIoyAmYdQJ5ITvFiZ3HJ4Zi0yfIM')
       app_options = Admin::AppUpdateOptions.new(oidc_client_id: client_id,
                                                 oidc_display_name: display_name,
-                                                oidc_issuer: issuer)
+                                                oidc_issuer: issuer,
+                                                oidc_provider_group_id: provider_group_id)
       @admin.app_update(@app.id, app_options)
     end
 
