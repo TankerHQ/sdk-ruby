@@ -95,6 +95,9 @@ module Tanker
 
     blocking_attach_function :tanker_free_buffer, [:pointer], :void
     blocking_attach_function :tanker_free_verification_method_list, [:pointer], :void
+
+    blocking_attach_function :tanker_before_fork, [], :void
+    blocking_attach_function :tanker_after_fork, [], :void
   end
 
   private_constant :CTanker
