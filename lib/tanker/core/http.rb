@@ -105,6 +105,11 @@ module Tanker
         init if @queue.nil?
         @queue << proc
       end
+
+      def self.before_fork
+        @http_thread_pool = nil
+        @queue = nil
+      end
     end
 
     class Client
