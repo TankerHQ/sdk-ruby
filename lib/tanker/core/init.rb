@@ -23,6 +23,8 @@ module Tanker
     end
 
     def initialize(options)
+      puts "### PID=#{Process.pid} TANKER-CORE initialize, about to call CTanker.tanker_init"
+
       # tanker_init is not called globally to avoid potential logs at global scope
       # some frameworks like to pre-execute statements at global scope and then fork, this fork can
       # interact badly with the threads used in the log handler, so never call Tanker at global scope
