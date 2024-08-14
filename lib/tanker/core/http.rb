@@ -85,6 +85,7 @@ module Tanker
       @queue = nil
 
       def self.init
+        puts "### PID=#{Process.pid} TANKER-CORE HTTP THREADPOOL INIT"
         # Queue is a concurrent queue in Ruby
         @queue = Queue.new
         @http_thread_pool = THREAD_POOL_SIZE.times do
@@ -95,6 +96,7 @@ module Tanker
       end
 
       def self.thread_loop
+        puts "### PID=#{Process.pid} TANKER-CORE HTTP THREADPOOL WORKER LOOP STARTED"
         loop do
           work = @queue.pop
           work.call
@@ -102,11 +104,13 @@ module Tanker
       end
 
       def self.push(proc)
+        puts "### PID=#{Process.pid} TANKER-CORE HTTP THREADPOOL PUSH"
         init if @queue.nil?
         @queue << proc
       end
 
       def self.before_fork
+        puts "### PID=#{Process.pid} TANKER-CORE HTTP THREADPOOL BEFORE FORK"
         @http_thread_pool = nil
         @queue = nil
       end
@@ -179,6 +183,7 @@ module Tanker
       end
 
       def send_request(crequest, _cdata)
+        puts "### PID=#{Process.pid} TANKER-CORE HTTP SEND_REQUEST CALLED"
         request = HttpRequest.new(crequest:)
         ThreadPool.push(proc do
           process_request request
