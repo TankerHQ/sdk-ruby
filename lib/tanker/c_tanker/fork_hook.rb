@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'tanker/core'
 require 'tanker/core/http'
 
 module Tanker
@@ -7,6 +8,7 @@ module Tanker
     def _fork(*args)
       puts "### PID=#{Process.pid} TANKER-CORE BEFORE FORK HOOK"
       CTanker.tanker_before_fork
+      Core.before_fork
       Http::ThreadPool.before_fork
 
       res = super

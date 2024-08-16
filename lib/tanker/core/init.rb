@@ -6,6 +6,10 @@ module Tanker
     @log_handler_lock = Mutex.new
     @log_handler_set = 0
 
+    def self.before_fork
+      @log_handler_set = 0
+    end
+
     def self.test_and_set_log_handler
       @log_handler_lock.synchronize do
         is_set = @log_handler_set
@@ -17,6 +21,7 @@ module Tanker
     def self.set_log_handler(&block)
       @log_handler_set = 1
       @log_handler = lambda do |clog|
+        puts "### PID=#{Process.pid} TANKER-CORE LOG HANDLER CALLED: #{clog[:message]}"
         block.call LogRecord.new clog[:category], clog[:level], clog[:file], clog[:line], clog[:message]
       end
       CTanker.tanker_set_log_handler @log_handler
