@@ -10,6 +10,7 @@ require_relative 'c_tanker/c_future'
 require_relative 'c_tanker/c_verification'
 require_relative 'c_tanker/c_verification_method'
 require_relative 'c_tanker/c_log_record'
+require_relative 'c_tanker/fork_hook'
 
 module Tanker
   module CTanker
@@ -98,6 +99,8 @@ module Tanker
 
     blocking_attach_function :tanker_before_fork, [], :void
     blocking_attach_function :tanker_after_fork, [], :void
+
+    ForkHook.install
   end
 
   private_constant :CTanker

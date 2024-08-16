@@ -6,6 +6,10 @@ module Tanker
     @log_handler_lock = Mutex.new
     @log_handler_set = 0
 
+    def self.before_fork
+      @log_handler_set = 0
+    end
+
     def self.test_and_set_log_handler
       @log_handler_lock.synchronize do
         is_set = @log_handler_set
