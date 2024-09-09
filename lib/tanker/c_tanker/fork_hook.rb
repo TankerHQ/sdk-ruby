@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
-require 'tanker/core/http'
-
 module Tanker
-  module ForkHook
-    def _fork(*args)
-      CTanker.tanker_before_fork
-      Http::ThreadPool.before_fork
+  module CTanker
+    module ForkHook
+      def _fork(*args)
+        CTanker.tanker_before_fork
+        super
+      ensure
+        CTanker.tanker_after_fork
+      end
 
-      res = super
-
-      CTanker.tanker_after_fork
-      res
+      def self.install
+        Process.singleton_class.prepend(self)
+      end
     end
-    prepend_features(Process.singleton_class)
   end
 end

@@ -110,6 +110,19 @@ module Tanker
         @http_thread_pool = nil
         @queue = nil
       end
+
+      module ForkHook
+        def _fork(*args)
+          ThreadPool.before_fork
+          super
+        end
+
+        def self.install
+          Process.singleton_class.prepend(self)
+        end
+      end
+
+      ForkHook.install
     end
 
     class Client
