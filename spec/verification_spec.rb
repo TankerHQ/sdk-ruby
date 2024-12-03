@@ -524,9 +524,6 @@ RSpec.describe "#{Tanker} Verification" do
   end
 
   describe 'user enrollment' do
-    before(:all) { @app.toggle_user_enrollment true }
-    after(:all) { @app.toggle_user_enrollment false }
-
     before(:each) { @server = Tanker::Core.new @options }
     after(:each) { @server.free }
 
