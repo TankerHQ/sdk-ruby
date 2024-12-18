@@ -78,4 +78,6 @@ module Tanker
   end
 
   class E2ePassphraseVerificationMethod < VerificationMethod; end
+
+  class PrehashedAndEncryptedPassphraseVerificationMethod < VerificationMethod; end
 end

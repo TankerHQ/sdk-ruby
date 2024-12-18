@@ -79,6 +79,13 @@ module Tanker
       CTanker.tanker_prehash_password(str).get_string
     end
 
+    def self.prehash_and_encrypt_password(password, public_key)
+      ASSERT_UTF8.call(password)
+      ASSERT_UTF8.call(public_key)
+
+      CTanker.tanker_prehash_and_encrypt_password(password, public_key).get_string
+    end
+
     private
 
     def encrypt_common(data, encryption_options)

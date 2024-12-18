@@ -139,4 +139,16 @@ module Tanker
       @e2e_passphrase = e2e_passphrase
     end
   end
+
+  class PrehashedAndEncryptedPassphraseVerification < Verification
+    attr_reader :prehashed_and_encrypted_passphrase
+
+    def initialize(prehashed_and_encrypted_passphrase)
+      super()
+
+      ASSERT_UTF8.call(prehashed_and_encrypted_passphrase)
+
+      @prehashed_and_encrypted_passphrase = prehashed_and_encrypted_passphrase
+    end
+  end
 end

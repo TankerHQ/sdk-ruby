@@ -30,6 +30,7 @@ class AppConfig
   attr_reader :oidc_config
   attr_reader :trustchain_url
   attr_reader :verification_api_token
+  attr_reader :enroll_passphrase_public_encryption_key
 
   def self.safe_get_env(var)
     val = ENV.fetch(var, nil)
@@ -62,6 +63,7 @@ class AppConfig
       }
     }
     @oidc_config = OIDCConfig.new client_id, client_secret, issuer, provider_name, fake_oidc_issuer_url, users
+    @enroll_passphrase_public_encryption_key = AppConfig.safe_get_env('TANKER_ENROLL_PASSPHRASE_PUBLIC_ENCRYPTION_KEY')
   end
 end
 

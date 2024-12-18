@@ -90,6 +90,7 @@ module Tanker
     blocking_attach_function :tanker_http_handle_response, [CHttpRequest, CHttpResponse], :void
 
     blocking_attach_function :tanker_prehash_password, [:string], CFuture
+    blocking_attach_function :tanker_prehash_and_encrypt_password, [:string, :string], CFuture
 
     blocking_attach_function :tanker_authenticate_with_idp, [:session_pointer, :string, :string], CFuture
     blocking_attach_function :tanker_free_authenticate_with_idp_result, [:pointer], :void

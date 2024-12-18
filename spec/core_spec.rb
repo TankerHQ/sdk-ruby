@@ -279,6 +279,54 @@ RSpec.describe Tanker do
     expect(Tanker::Core.prehash_password(input)).to eq expected
   end
 
+  it 'fails to prehash and encrypt password when password is an empty string' do
+    password = ''
+    public_key = 'XJTPOJqdKJLCGwimhANxqrtiC2BOTmJUjJG7l4s5UhY='
+    expect { Tanker::Core.prehash_and_encrypt_password(password, public_key) }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+    end
+  end
+
+  it 'fails to prehash and encrypt password when public key is an empty string' do
+    password = 'Happy birthday ! 🥳'
+    public_key = ''
+    expect { Tanker::Core.prehash_and_encrypt_password(password, public_key) }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+    end
+  end
+
+  it 'fails to prehash and encrypt password when public key is not a base64-encoded string' do
+    password = 'Happy birthday ! 🥳'
+    public_key = '🎂'
+    expect { Tanker::Core.prehash_and_encrypt_password(password, public_key) }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+    end
+  end
+
+  it 'fails to prehash and encrypt password when public key is invalid' do
+    password = 'Happy birthday ! 🥳'
+    public_key = 'fake'
+    expect { Tanker::Core.prehash_and_encrypt_password(password, public_key) }.to(raise_error) do |e|
+      expect(e).to be_a(Tanker::Error)
+      expect(e).to be_a(Tanker::Error::InvalidArgument)
+      expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+    end
+  end
+
+  it 'can prehash and encrypt password' do
+    password = 'Happy birthday ! 🥳'
+    public_key = 'XJTPOJqdKJLCGwimhANxqrtiC2BOTmJUjJG7l4s5UhY='
+    paep = Tanker::Core.prehash_and_encrypt_password(password, public_key)
+    expect(paep).to be_kind_of String
+    expect(paep.length).to be > 0
+  end
+
   it 'can share with a provisional user' do
     message = 'No plugin updates available'
     alice = Tanker::Core.new @options
