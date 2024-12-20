@@ -28,6 +28,12 @@ def extract_subject(id_token)
   jbody['sub']
 end
 
+def create_paep_verification(passphrase)
+  public_key = AppConfig.instance.enroll_passphrase_public_encryption_key
+  paep = Tanker::Core.prehash_and_encrypt_password(passphrase, public_key)
+  Tanker::PrehashedAndEncryptedPassphraseVerification.new paep
+end
+
 RSpec.describe "#{Tanker} Verification" do
   before(:all) do
     Tanker::App.use_test_log_handler
@@ -320,6 +326,22 @@ RSpec.describe "#{Tanker} Verification" do
       tanker.free
     end
 
+    it 'fails to register with a prehashed and encrypted passphrase' do
+      tanker = Tanker::Core.new @options
+      tanker.start @identity
+
+      paep_verification = create_paep_verification('p@assword')
+
+      expect { tanker.register_identity paep_verification }
+        .to(raise_error) do |e|
+        expect(e).to be_a(Tanker::Error)
+        expect(e).to be_a(Tanker::Error::InvalidArgument)
+        expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+      end
+
+      tanker.free
+    end
+
     it 'fails to verify with preverified email' do
       email = 'mono@chromat.ic'
 
@@ -378,6 +400,28 @@ RSpec.describe "#{Tanker} Verification" do
       tanker2.start @identity
 
       expect { tanker2.verify_identity Tanker::PreverifiedOIDCVerification.new(@martine_subject, provider_id) }
+        .to(raise_error) do |e|
+        expect(e).to be_a(Tanker::Error)
+        expect(e).to be_a(Tanker::Error::InvalidArgument)
+        expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+      end
+
+      tanker2.free
+    end
+
+    it 'fails to verify with a prehashed and encrypted passphrase' do
+      passphrase = 'p@ssword'
+      tanker1 = Tanker::Core.new @options
+      tanker1.start @identity
+      tanker1.register_identity Tanker::PassphraseVerification.new(passphrase)
+      tanker1.free
+
+      tanker2 = Tanker::Core.new @options
+      tanker2.start @identity
+
+      paep_verification = create_paep_verification(passphrase)
+
+      expect { tanker2.verify_identity paep_verification }
         .to(raise_error) do |e|
         expect(e).to be_a(Tanker::Error)
         expect(e).to be_a(Tanker::Error::InvalidArgument)
@@ -453,6 +497,24 @@ RSpec.describe "#{Tanker} Verification" do
       tanker2.verify_identity Tanker::OIDCIDTokenVerification.new(@martine_id_token)
       expect(tanker2.status).to eq(Tanker::Status::READY)
       tanker2.free
+    end
+
+    it 'fails to set verification method to prehashed and encrypted passphrase' do
+      passphrase = '42 is the Answer to the Ultimate Question of Life, the Universe, and Everything'
+      tanker = Tanker::Core.new @options
+      tanker.start @identity
+      tanker.register_identity Tanker::PassphraseVerification.new passphrase
+
+      paep_verification = create_paep_verification(passphrase)
+
+      expect { tanker.set_verification_method paep_verification }
+        .to(raise_error) do |e|
+        expect(e).to be_a(Tanker::Error)
+        expect(e).to be_a(Tanker::Error::InvalidArgument)
+        expect(e.code).to eq(Tanker::Error::INVALID_ARGUMENT)
+      end
+
+      tanker.free
     end
   end
 
@@ -564,10 +626,12 @@ RSpec.describe "#{Tanker} Verification" do
 
       phone_number = '+33639982233'
       email = 'mono@chromat.ic'
+      passphrase = 'Penny Lane is in my ears and in my eyes'
       @server.enroll_user(@identity, [
                             Tanker::PreverifiedPhoneNumberVerification.new(phone_number),
                             Tanker::PreverifiedEmailVerification.new(email),
-                            Tanker::PreverifiedOIDCVerification.new(@martine_subject, provider_id)
+                            Tanker::PreverifiedOIDCVerification.new(@martine_subject, provider_id),
+                            create_paep_verification(passphrase)
                           ])
 
       tanker1 = Tanker::Core.new @options
@@ -576,6 +640,8 @@ RSpec.describe "#{Tanker} Verification" do
       tanker2.start @identity
       tanker3 = Tanker::Core.new @options
       tanker3.start @identity
+      tanker4 = Tanker::Core.new @options
+      tanker4.start @identity
 
       expect(tanker1.status).to eq(Tanker::Status::IDENTITY_VERIFICATION_NEEDED)
       tanker1.verify_identity Tanker::EmailVerification.new(
@@ -595,9 +661,14 @@ RSpec.describe "#{Tanker} Verification" do
       tanker3.verify_identity Tanker::OIDCIDTokenVerification.new(@martine_id_token)
       expect(tanker3.status).to eq(Tanker::Status::READY)
 
+      expect(tanker4.status).to eq(Tanker::Status::IDENTITY_VERIFICATION_NEEDED)
+      tanker4.verify_identity Tanker::PassphraseVerification.new(passphrase)
+      expect(tanker4.status).to eq(Tanker::Status::READY)
+
       tanker1.free
       tanker2.free
       tanker3.free
+      tanker4.free
     end
   end
 

@@ -93,7 +93,8 @@ module Tanker
              :preverified_email, :pointer,
              :preverified_phone_number, :pointer,
              :preverified_oidc, COIDCVerification,
-             :oidc_authorization_code_verification, COIDCAuthorizationCodeVerification
+             :oidc_authorization_code_verification, COIDCAuthorizationCodeVerification,
+             :prehashed_and_encrypted_passphrase, :pointer
 
       TYPE_EMAIL = 1
       TYPE_PASSPHRASE = 2
@@ -105,6 +106,7 @@ module Tanker
       TYPE_E2E_PASSPHRASE = 8
       TYPE_PREVERIFIED_OIDC = 9
       TYPE_OIDC_AUTHORIZATION_CODE = 10
+      TYPE_PREHASHED_AND_ENCRYPTED_PASSPHRASE = 11
 
       def initialize(verification) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity Not relevant for a case/when
         super()
@@ -157,11 +159,15 @@ module Tanker
             verification.authorization_code,
             verification.state
           )
+        when Tanker::PrehashedAndEncryptedPassphraseVerification
+          @prehashed_and_encrypted_passphrase = CTanker.new_cstring verification.prehashed_and_encrypted_passphrase
+          self[:type] = TYPE_PREHASHED_AND_ENCRYPTED_PASSPHRASE
+          self[:prehashed_and_encrypted_passphrase] = @prehashed_and_encrypted_passphrase
         else
           raise ArgumentError, 'Unknown Tanker::Verification type!'
         end
 
-        self[:version] = 8
+        self[:version] = 9
       end
     end
 
