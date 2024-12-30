@@ -6,8 +6,8 @@ include:
 variables:
   SDK_NATIVE_CONAN_REFERENCE: tanker/latest-stable@
   RUBY_3_4: 3.4.1
-  RUBY_3_3: 3.3.0
-  RUBY_3_2: 3.2.2
+  RUBY_3_3: 3.3.6
+  RUBY_3_2: 3.2.6
   PROFILE_LINUX: --profile linux-x86_64 shared no-http-backend
   PROFILE_MAC_X86: --profile macos-x86_64 shared no-http-backend
   PROFILE_MAC_ARM: --profile macos-armv8 shared no-http-backend
