@@ -11,7 +11,7 @@ variables:
   PROFILE_LINUX: --profile linux-x86_64 shared no-http-backend
   PROFILE_MAC_X86: --profile macos-x86_64 shared no-http-backend
   PROFILE_MAC_ARM: --profile macos-armv8 shared no-http-backend
-  RBENV_VERSION: $RUBY_3_2
+  RBENV_VERSION: $RUBY_3_4
 
 
 ############
@@ -133,7 +133,6 @@ prepare/linux:
   extends:
     - .prepare
   variables:
-    RBENV_VERSION: $RUBY_3_2
     TANKER_PROFILES: $PROFILE_LINUX
   tags: !reference [.tags/linux, tags]
 
@@ -314,7 +313,6 @@ check/downstream/macos/arm:
     - .check/downstream
     - .rules/check/downstream/macos/arm
   variables:
-    RBENV_VERSION: $RUBY_3_2
     TANKER_PROFILES: $PROFILE_MAC_ARM
 
 ################
