@@ -5,13 +5,14 @@ include:
 
 variables:
   SDK_NATIVE_CONAN_REFERENCE: tanker/latest-stable@
-  RUBY_3_3: 3.3.0
-  RUBY_3_2: 3.2.2
-  RUBY_3_1: 3.1.4
+  RUBY_3_4: 3.4.1
+  RUBY_3_3: 3.3.6
+  RUBY_3_2: 3.2.6
+  RUBY_3_2_LEGACY: 3.2.2
   PROFILE_LINUX: --profile linux-x86_64 shared no-http-backend
   PROFILE_MAC_X86: --profile macos-x86_64 shared no-http-backend
   PROFILE_MAC_ARM: --profile macos-armv8 shared no-http-backend
-  RBENV_VERSION: $RUBY_3_2
+  RBENV_VERSION: $RUBY_3_4
 
 
 ############
@@ -133,7 +134,6 @@ prepare/linux:
   extends:
     - .prepare
   variables:
-    RBENV_VERSION: $RUBY_3_2
     TANKER_PROFILES: $PROFILE_LINUX
   tags: !reference [.tags/linux, tags]
 
@@ -149,6 +149,7 @@ prepare/macos/arm:
     - .tags/macos/arm
     - .prepare
   variables:
+    RBENV_VERSION: $RUBY_3_2_LEGACY
     TANKER_PROFILES: $PROFILE_MAC_ARM
 
 ###############
@@ -164,14 +165,6 @@ prepare/macos/arm:
   script:
     - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE prepare --use-tanker=same-as-branch $TANKER_PROFILES
     - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE build --test
-
-check/native-from-sources/linux/3.1:
-  extends:
-    - .check/native-from-sources
-  variables:
-    RBENV_VERSION: $RUBY_3_1
-    TANKER_PROFILES: $PROFILE_LINUX
-  tags: !reference [.tags/compilation-linux, tags]
 
 check/native-from-sources/linux/3.2:
   extends:
@@ -189,6 +182,14 @@ check/native-from-sources/linux/3.3:
     TANKER_PROFILES: $PROFILE_LINUX
   tags: !reference [.tags/compilation-linux, tags]
 
+check/native-from-sources/linux/3.4:
+  extends:
+    - .check/native-from-sources
+  variables:
+    RBENV_VERSION: $RUBY_3_4
+    TANKER_PROFILES: $PROFILE_LINUX
+  tags: !reference [.tags/compilation-linux, tags]
+
 check/native-from-sources/macos/x86_64:
   extends:
     - .tags/macos/x86_64
@@ -201,6 +202,7 @@ check/native-from-sources/macos/arm:
     - .tags/macos/arm
     - .check/native-from-sources
   variables:
+    RBENV_VERSION: $RUBY_3_2_LEGACY
     TANKER_PROFILES: $PROFILE_MAC_ARM
 
 .rules/check/deployed-native:
@@ -215,16 +217,6 @@ check/native-from-sources/macos/arm:
     - .rules/check/deployed-native
   script:
     - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE build --test
-
-check/deployed-native/linux/3.1:
-  extends:
-    - .check/deployed-native
-  variables:
-    RBENV_VERSION: $RUBY_3_1
-    TANKER_PROFILES: $PROFILE_LINUX
-  needs:
-    - prepare/linux
-  tags: !reference [.tags/linux, tags]
 
 check/deployed-native/linux/3.2:
   extends:
@@ -246,6 +238,16 @@ check/deployed-native/linux/3.3:
     - prepare/linux
   tags: !reference [.tags/linux, tags]
 
+check/deployed-native/linux/3.4:
+  extends:
+    - .check/deployed-native
+  variables:
+    RBENV_VERSION: $RUBY_3_4
+    TANKER_PROFILES: $PROFILE_LINUX
+  needs:
+    - prepare/linux
+  tags: !reference [.tags/linux, tags]
+
 check/deployed-native/macos/x86_64:
   extends:
     - .tags/macos/x86_64
@@ -260,6 +262,7 @@ check/deployed-native/macos/arm:
     - .tags/macos/arm
     - .check/deployed-native
   variables:
+    RBENV_VERSION: $RUBY_3_2_LEGACY
     TANKER_PROFILES: $PROFILE_MAC_ARM
   needs:
     - prepare/macos/arm
@@ -272,15 +275,6 @@ check/deployed-native/macos/arm:
   script:
     - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE prepare --use-tanker=upstream $TANKER_PROFILES
     - poetry run python run-ci.py --isolate-conan-user-home --remote $CONAN_REMOTE build --test
-
-check/downstream/linux/3.1:
-  extends:
-    - .check/downstream
-    - .rules/check/downstream/linux
-  variables:
-    RBENV_VERSION: $RUBY_3_1
-    TANKER_PROFILES: $PROFILE_LINUX
-  tags: !reference [.tags/linux, tags]
 
 check/downstream/linux/3.2:
   extends:
@@ -300,6 +294,15 @@ check/downstream/linux/3.3:
     TANKER_PROFILES: $PROFILE_LINUX
   tags: !reference [.tags/linux, tags]
 
+check/downstream/linux/3.4:
+  extends:
+    - .check/downstream
+    - .rules/check/downstream/linux
+  variables:
+    RBENV_VERSION: $RUBY_3_4
+    TANKER_PROFILES: $PROFILE_LINUX
+  tags: !reference [.tags/linux, tags]
+
 check/downstream/macos/x86_64:
   extends:
     - .tags/macos/x86_64
@@ -314,7 +317,7 @@ check/downstream/macos/arm:
     - .check/downstream
     - .rules/check/downstream/macos/arm
   variables:
-    RBENV_VERSION: $RUBY_3_2
+    RBENV_VERSION: $RUBY_3_2_LEGACY
     TANKER_PROFILES: $PROFILE_MAC_ARM
 
 ################

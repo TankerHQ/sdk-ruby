@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'set'
 # always keep this file first, it defines the module and the class
 require_relative 'core/version'
 require_relative 'c_tanker'

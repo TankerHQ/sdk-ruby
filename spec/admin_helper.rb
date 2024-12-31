@@ -136,7 +136,7 @@ module Tanker
              :state, :string
 
       def initialize(cverification)
-        super(cverification)
+        super
 
         @cverification = cverification
         cverification_addr = @cverification.address
