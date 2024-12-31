@@ -8,7 +8,6 @@ variables:
   RUBY_3_4: 3.4.1
   RUBY_3_3: 3.3.6
   RUBY_3_2: 3.2.6
-  RUBY_3_2_LEGACY: 3.2.2
   PROFILE_LINUX: --profile linux-x86_64 shared no-http-backend
   PROFILE_MAC_X86: --profile macos-x86_64 shared no-http-backend
   PROFILE_MAC_ARM: --profile macos-armv8 shared no-http-backend
@@ -149,7 +148,6 @@ prepare/macos/arm:
     - .tags/macos/arm
     - .prepare
   variables:
-    RBENV_VERSION: $RUBY_3_2_LEGACY
     TANKER_PROFILES: $PROFILE_MAC_ARM
 
 ###############
@@ -202,7 +200,6 @@ check/native-from-sources/macos/arm:
     - .tags/macos/arm
     - .check/native-from-sources
   variables:
-    RBENV_VERSION: $RUBY_3_2_LEGACY
     TANKER_PROFILES: $PROFILE_MAC_ARM
 
 .rules/check/deployed-native:
@@ -262,7 +259,6 @@ check/deployed-native/macos/arm:
     - .tags/macos/arm
     - .check/deployed-native
   variables:
-    RBENV_VERSION: $RUBY_3_2_LEGACY
     TANKER_PROFILES: $PROFILE_MAC_ARM
   needs:
     - prepare/macos/arm
@@ -317,7 +313,6 @@ check/downstream/macos/arm:
     - .check/downstream
     - .rules/check/downstream/macos/arm
   variables:
-    RBENV_VERSION: $RUBY_3_2_LEGACY
     TANKER_PROFILES: $PROFILE_MAC_ARM
 
 ################
