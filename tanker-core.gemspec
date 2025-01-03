@@ -33,5 +33,5 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'faraday', '>= 0.17.5', '< 3.0.0'
-  spec.add_dependency 'ffi', '~> 1.13'
+  spec.add_dependency 'ffi', '>= 1.17.1', '< 2.0'
 end
