@@ -46,7 +46,7 @@ module Tanker
 
         @method = self.class.method_str_to_symbol crequest[:method]
         @url = crequest[:url]
-        @body = crequest[:body].read_string_length(crequest[:body_size])
+        @body = (crequest[:body].read_string_length(crequest[:body_size]) if crequest[:body_size].positive?)
 
         count = crequest[:num_headers]
         headers_base_addr = crequest[:headers]
@@ -166,7 +166,7 @@ module Tanker
         headers['X-Tanker-SdkType'] = @sdk_type
         headers['X-Tanker-SdkVersion'] = @sdk_version
 
-        fresponse = Faraday.run_request(request.method, request.url, request.body, headers)
+        fresponse = @conn.run_request(request.method, request.url, request.body, headers)
 
         request.complete_if_not_canceled do
           # Faraday stores identical headers as a comma separated string
