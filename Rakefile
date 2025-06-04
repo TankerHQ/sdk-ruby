@@ -12,8 +12,8 @@ def map_library_name(libname)
   "#{FFI::Platform::LIBPREFIX}#{libname}.#{FFI::Platform::LIBSUFFIX}"
 end
 
-def vendor_arch
-  "#{FFI::Platform::OS}-#{FFI::Platform::ARCH}"
+def vendor_arch(arch)
+  "#{FFI::Platform::OS}-#{arch == 'armv8' ? 'aarch64' : arch}"
 end
 
 def define_copy_tanker
@@ -26,7 +26,8 @@ def define_copy_tanker
   tankerdep = deps_info['dependencies'].detect { |d| d['name'] == 'tanker' }
   # we only need ctanker
   libs = ['ctanker']
-  dest = "vendor/tanker/#{vendor_arch}"
+  dest = "vendor/tanker/#{vendor_arch(deps_info['settings']['arch'])}"
+
   desc 'create vendor directory'
   file dest do
     mkdir_p dest
@@ -43,9 +44,6 @@ end
 define_copy_tanker
 
 task :tanker_libs do
-  libs = Dir.glob("vendor/tanker/#{vendor_arch}/#{map_library_name('ctanker')}")
-  raise 'no vendor library present and no build infos to get it from' if libs.empty?
-
   task 'copy_tanker_libs'
 end
 

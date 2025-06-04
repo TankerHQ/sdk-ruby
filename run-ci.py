@@ -55,9 +55,11 @@ def set_credentials() -> None:
 def deploy(version: str) -> None:
     expected_libs = [
         "vendor/tanker/linux-x86_64/libctanker.so",
+        "vendor/tanker/linux-aarch64/libctanker.so",
         "vendor/tanker/darwin-x86_64/libctanker.dylib",
         "vendor/tanker/darwin-aarch64/libctanker.dylib",
     ]
+
     for lib in expected_libs:
         expected_path = Path(lib)
         if not expected_path.exists():

@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
     'lib/**/*',
     # Keep this in sync with run-ci.py
     'vendor/tanker/linux-x86_64/libctanker.so',
+    'vendor/tanker/linux-aarch64/libctanker.so',
     'vendor/tanker/darwin-x86_64/libctanker.dylib',
     'vendor/tanker/darwin-aarch64/libctanker.dylib',
   ]
